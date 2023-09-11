@@ -167,9 +167,9 @@ umd_courses |>
   arrange(term, department)
 ```
 
-Compared to the previous codeblock, how did the output change and what in the code changed it? The classes are grouped in departments. The code shows group by (term, department).
+Compared to the previous codeblock, how did the output change and what in the code changed it? 
 
-**Answer**
+**Answer** The classes are grouped in departments. The code shows group by (term, department).
 
 ### Task 12: Other summary functions
 
@@ -185,7 +185,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer**
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer** The codeblock has added the column to the number of seats available for each class in each term. It does organise the term with the highest number of classes and, in a way, the highest number of seats in the classes in descending order.
 
 ### Task 13: different kinds of summarizations
 
@@ -203,7 +203,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer**
+Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer** The data added two other columns that indicate the mean and median number of seats in the classes. Just to note, the data is arranged on terms with the highest number of classes and seats in descending order. The top terms are terms beginning in August, which are fall terms.
 
 ### Task 14: more aggregations
 
@@ -217,8 +217,8 @@ umd_courses |>
     total_seats = sum(seats),
     mean_seats = mean(seats),
     median_seats = median(seats),
-    # add minimum seats here
-    # add maximum seats here
+    minimum_seats = min(seats),
+    maximum_seats = max (seats),
   ) |>
   arrange(desc(total_seats))
 ```
@@ -226,15 +226,15 @@ umd_courses |>
 Compared to the previous codeblock, what has changed and how did that affect the result? How is the data sorted?
 
 **Answer**
-
+Two other columns have been added that organises the maximum and minimum number of seats in each department. The departments are arranged with the highest number of seats at the top going down in descending order.
 ### Task 12: Questions
 
 No code here; I want you to provide three questions that this data suggests to you. What would you like to ask it?
 
 **Answer**
 
-1.  
+1.  What are the names of the top 6 classes with the highest number of seats (in any department) and how many numbers of seats are there available each term for those classes?
 
-2.  
+2.  How many seats on the classes for each department for each term are filled? 
 
-3.  
+3.  What is the name of the professors from which department and term have teaches or has taught the classes with the highest number of seats filled arranged in descending order?
