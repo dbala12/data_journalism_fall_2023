@@ -40,25 +40,62 @@ umd_courses <- read_rds("lab_01.rds")
 ## Answer questions
 
 **Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you?
-**A1**
+**A1** Engineering, Cooperative Education Department. It's interesting that the Engineering, Cooperative Education department has such a high mean (average) number of seats for its classes compared to other departments. It is almost double the mean number of seats for its classes compared to the Engineering Science Department.
 
 ```{r}
+umd_courses |> 
+  group_by (department) |> 
+  summarise(
+    count_classes = n(),
+    total_seats = sum(seats),
+    mean_seats = mean(seats),
+    maximum_seats = max(seats),
+  ) |> 
+  arrange(desc(mean_seats))
 ```
 
 **Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. 
-**A2**
+**A2** If any class is offered all four terms for the last 6 years (as per the cata set),
+then the greatest number of classes any class could be offered would not be more than 24. According to the codeblock below, the greatest number of time any individual class has been offered is 22.
 
 ```{r}
+umd_courses |> 
+  group_by(department,id) |> 
+  summarise(
+    count_classes = n()
+  ) |> 
+  arrange(desc(count_classes))
+  
 ```
 
-**Q3** Count the number of courses for each instructor and department. Which instructor has taught the most? **A3**
+**Q3** Count the number of courses for each instructor and department. Which instructor has taught the most? **A3** The name of the instructor is NA but it is the instructor for 	Directed Graduate Studies in Studio Art in the Art Studio Department. It is 69 number of classes.
 
 ```{r}
+umd_courses |> 
+  group_by (department, instructors, title) |> 
+  summarise(
+    count_classes = n()
+  ) |> 
+  arrange(desc(count_classes))
+
 ```
 
-**Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why? **A4**
+**Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why? **A4** I would arrange the number of total classes in descending order and get the name of the instructor.
 
-**Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting? **A5**
+**Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting? **A5** 1.  What are the names of the top 6 classes with the highest number of seats (in any department) and how many number of seats are there available each term for those classes?
+The names of the top 6 classes with the highest number of seats (applies to any department) are Discovering New Ventures, Entrepreneurial Opportunity Analysis and Decision-Making in 21st Century Technology Ventures (both in the Engineering Science Department), Oral Communication (Institute of Applied Agriculture department), Human Sexuality (Health department), Principles of Macroeconomics (Economics department) and Academic Writing (English department).
+
+For the second part of the question, I am unsure how to find the number of seats available for each term for those classes. However, this is what I plan to do. I would use the data I have for the total number of seats for each of the six classes and break it down to how many times the class is offered in each term in the last 6 years. Then, I would count the total seats for each term of each class.
 
 ```{r}
+umd_courses |> 
+  group_by(title, department, seats) |> 
+  summarise(
+    count_classes = n(),
+    total_seats = sum(seats),
+    maximum_seats = max(seats),
+    ) |> 
+  arrange(desc(total_seats))
+
+  
 ```
