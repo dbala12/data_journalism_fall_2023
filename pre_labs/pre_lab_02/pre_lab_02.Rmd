@@ -91,7 +91,7 @@ And now we only have two columns of data for whatever analysis we might want to 
 
 Notice that we made a new variable to hold the result. Why is that important?
 
-**Answer**
+**Answer** The new variable is created to hold a specific and filtered data set we want to focus on for our analysis. This allows us to not need to write and repeat the code for the filtered data set (the new variable) for us to work on again.
 
 ### Task 6: Combining filters
 
@@ -125,7 +125,7 @@ and_theatre_seats_15 <- umd_courses |> filter(department == "Theatre" | seats >=
 nrow(and_theatre_seats_15)
 ```
 
-**Answer**
+**Answer** 41011
 
 When it comes to filters, OR is additive; AND is restrictive.
 
@@ -168,7 +168,7 @@ maryland_expenses <- maryland_expenses |> mutate(expenditure_date=mdy(expenditur
 head(maryland_expenses)
 ```
 
-**Answer:**
+**Answer:** The change made in Task 8 shows the expenditure_date column as a '<date>' instead of a character column. The mutate function has changed the expenditure_date column from a character to a date column by using the lubridate function mdy so that it recognises the date as month, day, year and turn it into a date that R would recognise as a date. The expenditure_date column in Task 8 would then show the date as recognised by R after the lubridate mutate function has been used.
 
 Lubridate has functions for basically any type of character date format: mdy, ymd, even datetimes like ymd_hms.
 
@@ -204,7 +204,7 @@ So the month of June 2022 had the most expenditures by far in this data.
 
 Describe the values in the new `month` column - what do you think is going on there?
 
-**Answer**
+**Answer** The mutate function has grouped by month the total amount of expenses for the month. The month column has a floor_date that attaches the total amount of expenses and grouped it to the 1st day of every month. The new 'month' column is arranged as such that the month with the highest total amount of expenses is at the top and going down in descending order.
 
 ### Task 10: Mutate
 
@@ -234,7 +234,7 @@ general_22 <- general_22 |>
 
 Describe what you think this code is doing below.
 
-**Answer**
+**Answer** The code is creating two new collumns to the general_22 dataset. The mutate function is to change the dataset and add on two new columns with new data built on or based on data from an existing column. The first column creates the total votes of all candidates and this would be needed to create the next column which is the percentage of votes for Moore which is moore/total_votes calculated. Just to note, I think the decimal is in the pct_moore column because it has not been multiplied by 100 percent. Based on math it is the value over the total value multiplied by 100 percent that gives the percentage.
 
 ### Task 11: Better percentage calculation
 
@@ -263,7 +263,7 @@ general_22 <- general_22 |>
 
 How did the answer change from the previous task, and why?
 
-**Answer**
+**Answer** If the change is from the previous task is Task 11, the data in the pct_moore column is arranged in descending order in counties with highest percentage of Moore votes going down to the lowest and this us due to the arrange function. However, if the change is based off from Task 10, then the change would be that the pct_moore column data in Task 12 is multiplied by 100 percent whereas pct_moore column data in Task 10 is not multiplied by 100 percent.Based on math it is the value over the total value multiplied by 100 percent that gives the percentage.
 
 ### Task 13: Mutate with ordering, part 2
 
@@ -277,7 +277,7 @@ general_22 |>
 
 Is this a more interesting or useful answer? Why?
 
-**Answer**
+**Answer** It could be useful or interesting if what we are looking for are counties with the lowest percentage of Moore votes and then arranged in ascending order. 
 
 ### Task 14: Standardize existing data using mutate
 
@@ -300,8 +300,8 @@ standardized_maryland_expenses <- maryland_expenses |>
 
 **Task** Search the Internet for tidyverse functions similar to str_to_upper. Name at least two and describe what they do. If you use ChatGPT for this, include the question you submitted.
 
-**Answer**
-
+**Answer** str_to_lower, this converts a character column to all lowercase. str_to_title, where this function would convert a string of characters in the column to make it look like a title, meaning the first letter of each word would be in uppercase and the other letters in the word in lowercase.
+ 
 There are lots of potential uses for standardization - addresses, zip codes, anything that can be misspelled or abbreviated.
 
 ### Task 15: Create a new column using case_when
@@ -310,7 +310,7 @@ Mutate is even more useful when combined with some additional functions. Let's k
 
 **Task** Run the following code and look at the output. Then write a sentence or two describing what you think the mutate statement is doing step by step.
 
-**Answer**
+**Answer** The mutate statement is creating new columns in the data set where each column is assigned with a state and the addresses in the dataset are then categorised in the columns based on the state it is in. Say if there is an address in Maryland, it would be categorised under the new column as MD. It basically says that when a case of where an adress with Maryland in it is shown, then it would be recognised as MD in the new column.
 
 ```{r}
 maryland_expenses_with_state <- maryland_expenses |>
@@ -345,7 +345,7 @@ maryland_expenses_with_state |>
 
 Does this answer make sense to you? Why or why not?
 
-**Answer**
+**Answer** Yes it does. It shows that $77,723,145.82 was used in total expenses in Maryland. It would make sense that MD would have the highest total expenses as this is data is the Maryland Expenses with State.
 
 Mutate is there to make your data more useful and to make it easier for you to ask more and better questions of it.
 
@@ -355,8 +355,8 @@ Now that you have seen how to use mutate, filtering and dates, give me three que
 
 **Answer**
 
-1.
+1. In the Maryland expenditure data, what is the percentage of total amount expenses in states in descending order?
 
-2.  
+2. In the Maryland expenditure data, what is the percentage of total amount of expenses in states per month in descending order for payee type candidate committee?
 
-3.  
+3. In the Maryland expenditure data, which month had the highest total expenses by payee type self (candidate)?
