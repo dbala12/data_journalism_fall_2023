@@ -33,37 +33,90 @@ maryland_expenses <- read_csv("data/maryland_expenses.csv")
 ## Answer questions
 
 **Q1.** How many departments have offered the courses with "Climate" in the title and at least one seat? Which department has offered the most?
-**A1.**
+**A1.** It should be 26. The department that offers courses with the title "Climate" it is the department of Atmospheric and Oceanic Science.
 
 ```{r}
+umd_courses |> 
+  filter(str_detect(title, "Climate") & seats >= 1) |> 
+group_by(department)  |> 
+summarise (
+  count_classes = n(),
+) |> 
+  arrange (desc(count_classes))
+
 ```
 
 **Q2.** Of the departments listed in A2, which one is the most interesting to you, and why?
-**A2.**
+**A2.** The department of Criminology and Criminal Studies which offers 2 courses that has the title "Climate" in them and it would be interesting to know which courses discuss about the correlation between crime, criminal justice and climate. I would think it would be courses that discuss about crimes involving environmental issues and I would like to find out about it.
 
 
 **Q3** Which departments have the most courses in the Fall 2023 term? And which departments in that term have at least one syllabus posted? How are the top five departments different in each result?
 
-**A3.**
+**A3.** The departments with the most courses in Fall 2023 term are Business and Management, School of Music, English, Teaching and Learning, Policy and Leadership. The departments in Fall 2023 term that have at least one syllabus are Business and Management, Economics, School of Music, Biological Sciences Program and Information Studies. It seems that the English, Teaching and Learning and the Policy and Leadership departments have the most courses in Fall 2023 that have more than one syllabus.
 
 ```{r}
+umd_courses |> 
+  filter(term >= 202308 & syllabus_count >= 1) |> 
+  group_by(department) |> 
+  summarise(
+    count_classes = n(),
+  ) |> 
+  arrange(desc(count_classes))
 ```
 
 **Q4.** Using the Maryland campaign expenses data, change the datatype of the expenditure_date column so that it is a date and not a chr, saving the result as the same dataframe. Then create a new column for the month based on expenditure_date. Then write code that shows total amount spent each month by Wes Moore's committee (you'll need to search the data to find the exact name). Write a sentence describing the pattern of spending over time.
-**A4.**
+**A4.** It looks like the code only processed Moore Maryland Expenses for 13 out of 25 months of campaign, with October, September and August 2022 have the highest expenses in that order, which makes sense as the expenses would increase closer to election date in November 2022. The new dataframe shows that N/A for total amount of expenses for 12 months, which incliudes 4 months in 2021 and the first seven months of 2021 and a month that is not accounted for. This is strange as there should be expenses in the first 7 months in 2022 and the last 2 months in 2021. 
 
-```{r}
+```{r} 
+maryland_expenses <- maryland_expenses |> mutate(expenditure_date=mdy(expenditure_date)) |> 
+  mutate(month = floor_date(expenditure_date, "month")) |> 
+  group_by(month) |> 
+  summarise(total_amount = sum(amount)) |> 
+  arrange(desc(total_amount))
+  
 ```
 
 **Q5.** Using case_when(), create a column in the Maryland expenses data called `spending_location` indicating whether each record spent money in Maryland or outside Maryland. For records that are in Maryland, make the new column's value "In-state" and for the others, make it "Out of state". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe).
 **A5**
-
+It shows that a total of $77,723,146.00 was the expenses in-state and it was $0 for out of state, which makes sense that there's more expenses for in-state but there should be some expenses for out of state too.
 ```{r}
+maryland_expenses <- read_csv("data/maryland_expenses.csv")
+
+maryland_expenses_with_state <- maryland_expenses |>
+  mutate(
+  spending_location = case_when(
+    str_detect(address, " Maryland ") ~ "In-state",
+    .default = "Out of state")) |> 
+  group_by(spending_location) |> 
+    summarize(total = sum(amount)) |> 
+    arrange(desc(total))
 ```
 
 
 **Q6.** Choose your own adventure: using either the UMD courses or campaign expenses data, ask and answer a question that is different than the previous ones. You can use one of the ones you provided in the pre_lab.
-**A6.**
+**A6.** In the Maryland expenditure data, what is the percentage of total amount expenses in states in descending order?
 
-```{r}
+I was not able to find the percentage but I did look for the total amount of expenses in states in descending order. It is Maryland with $77,723,145.82, followed by Washington with $15,552,127.40 and Virginia with $10,519,645.58. My question was to see in percentage the state with the top expenses in descending order if that makes sense. 
+
+
+```{r} 
+maryland_expenses <- read_csv("data/maryland_expenses.csv")
+maryland_expenses_with_state <- maryland_expenses |>
+  mutate(
+    state = case_when(
+        str_detect(address, " Maryland ") ~ "MD",
+        str_detect(address, " California ") ~ "CA",
+        str_detect(address, " Washington ") ~ "WA",
+        str_detect(address, " Louisiana ") ~ "LA",
+        str_detect(address, " Florida ") ~ "FL",
+        str_detect(address, " North Carolina ") ~ "NC",
+        str_detect(address, " Massachusetts ") ~ "MA",
+        str_detect(address, " West Virginia ") ~ "WV",
+        str_detect(address, " Virginia ") ~ "VA",
+        .default = NA,
+    )) |> 
+  group_by(state) |>
+  summarize(total = sum(amount))|>
+  arrange(desc(total))
+  
 ```
