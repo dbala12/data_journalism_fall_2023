@@ -43,7 +43,7 @@ library(tidyverse)
 ```{r}
 wes_moore_contributions <- read_csv("https://raw.githubusercontent.com/stephenneukam/CNS_Annapolis/main/Campaign_finance/Moore_ContributionsList.csv")
 ```
-
+### How to Arrange 
 ### How to count rows
 
 You use the `n()` function to count rows, like so:
@@ -52,4 +52,16 @@ You use the `n()` function to count rows, like so:
 dataframe %>% 
   group_by(some_column) %>% 
   summarize(count = n())
+
+  arrange(desc(count_classes))
+```
+```
+### How to group and count
+```{r}
+umd_courses |> 
+  group_by(term) |>
+  summarise(
+    count_classes = n()
+  )
+
 ```

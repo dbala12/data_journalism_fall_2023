@@ -233,8 +233,8 @@ No code here; I want you to provide three questions that this data suggests to y
 
 **Answer**
 
-1.  What are the names of the top 6 classes with the highest number of seats (in any department) and how many numbers of seats are there available each term for those classes?
+1.  What are the names of the top 6 classes with the highest number of seats (in any department) and how many number of seats are there available each term for those classes?
 
 2.  How many seats on the classes for each department for each term are filled? 
 
-3.  What is the name of the professors from which department and term have teaches or has taught the classes with the highest number of seats filled arranged in descending order?
+3.  What is the name of the professors from which department and term teaches or has taught the classes with the highest number of seats filled arranged in descending order?
