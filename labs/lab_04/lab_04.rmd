@@ -124,4 +124,4 @@ cleaned_maryland_expenses |>
 
 **Q5** Your editor asks you to summarize your findings about spending on Facebook by Maryland political candidates. How much do we know and what don't we know? What's the best story idea you've found here?
 
-**A5** Most Democrat campaigns or political candidates tend spend on Facebook ads. Just a question and an area to look into, where do Republican political candidates and campaigns put their ad campaign in if it is not in Facebook? Why not Facebook?
+**A5** Most Democrat campaigns or political candidates tend spend on Facebook ads. Just a question and an area to look into, where do Republican political candidates and campaigns put their ad campaign in if it is not in Facebook? Why not Facebook? Is it Twitter or X?
