@@ -1,7 +1,7 @@
 ---
 title: "week7_recap"
-author: "Daniel Trielli"
-date: "2023-10-04"
+author: "Daranee Balachandar"
+date: "2023-10-11"
 output: html_document
 ---
 
@@ -40,118 +40,170 @@ Most questions have a code block and a space for an answer below. Write the code
 
 #### **Q1** Look at the earthquakes dataset. Finish the sentence below as if you were explaining the data to someone who had not seen it before but needs to know about it.
 
-**A1:** This dataset contains 
-
+**A1:** This dataset contains the dates and times as well as the magnitudes of earthquakes that have taken place across the globe in the last one month time period, with the most recent one reported today, October 11, 2023. One interesting point is that the standard time for earthquakes recorded follows Greenwich Mean Time across the world. This data set captures the specific date and time as well as the place where the earthquake occured right down to the coordinates of the location. It also captures the magnitude of the eathquakes.
 ------------------------------------------------------------------------
 
 #### **Q2** How many records there are there in this dataset? What do they mean and what useful information we can gather from it, looking at the columns?
 
-**A2:**
+**A2:** The records date back to earthquakes captured in the last month, so the time period is between September 11, 2023 to October 11, 2023. 9774 earthquakes were recorded in that one month time period. There are 22 variables/columns and the information gathered from this are the date and time the earthquake happened (right down to the second), the latitude and longitude degree meaning the coordinates for the place where the earthquake happened. 
 
 ------------------------------------------------------------------------
 
 #### **Q3** How do I reorganize this data to see the ones that are the deepest first? What is the depth that shows up for the deepest one, and its magnitude?
 
 ```{r}
+earthquakes |> 
+  group_by(time, place, mag, depth) |> 
+  arrange(desc(depth))
+  
 
 ```
 
 **A3:**
-
+The depth shown for the deepest earthquake is 669.9820 and it's magnitude is 4.20. This happened in the Vanuatu region on September 18, 2023.
 ------------------------------------------------------------------------
 
 #### **Q4** I just want to see the earthquakes with a magnitude larger than 6. How do I do that? And how many are there that fit this criteria?
 
 ```{r}
+earthquakes |> 
+  filter(mag > 6.0)
+
 
 ```
 
-**A4:**
+**A4:** 13 earthquakes recorded a magnitude of more than 6.0.
 
 ------------------------------------------------------------------------
 
 #### **Q5** What about if I want to see earthquakes that have both a magnitude larger than 6 and a depth smaller than 20? How many are there in the data set that fit [both]{.underline} these criteria?
 
-```{r}
+```{r} 
+earthquakes |> 
+  filter(mag > 6.0 , depth < 20)
 
 ```
 
-**A5:**
-
+**A5:** 6 earthquakes have a magnitude of more than 6.0 and a depth less than 20.
 ------------------------------------------------------------------------
 
 #### **Q6** What about if I want to see earthquakes that either have a magnitude larger than 6 OR a depth smaller than 20? How many are there in the data set that fit [either]{.underline} these criteria?
 
 ```{r}
+earthquakes |> 
+  filter(mag > 6.0 | depth < 20)
 
 ```
 
-**A6:**
+**A6:** The dataset records 7,446 earthquakes that have a magnitude more than 6.0 OR a depth less than 20.
 
 ------------------------------------------------------------------------
 
 #### **Q7** I'm interested in finding earthquakes that took place in Alaska. Which column should I look at? How do I use it to find all the earthquakes in Alaska? How many earthquakes took place there?
 
 ```{r}
-
+earthquakes |> 
+  filter(str_detect(place, "Alaska")) |> 
+  group_by(place, time)
 ```
 
-**A7:**
+**A7:** To find earthquakes that took place in Alaska, I filtered the "place" column using string detect for Alaska. Initailly I was torn between using the "place" column or the "locationSource" column but then realised that when I filtered using the "place column it included the location source in us, ak, and av. So I would think that using the "place" column would capture the US, AK and AV location sources because if I were to only filter the "locationSource" "ak", I would have missed out on the earthquakes that were recorded under the us and av. 
 
+3,446 earthquakes took place in Alaska.
 ------------------------------------------------------------------------
 
 #### **Q8** I notice that there is a column called 'type', that seems to have different kinds of tremors. What is the best way to find what are all the possible types of tremors, and counting how many of each there are in this data set? What are the first two most common types of tremors in this data set?
 
-```{r}
-
+```{r} 
+earthquakes |> 
+  group_by(type) |> 
+  summarise(
+    count=n()
+  ) |>
+  arrange(desc(count))
+  
+  
 ```
 
 **A8:**
-
+So group by the type and count the number for each type and then proceed to arrange the count in decreasing order to find the first two most common types of tremors. The first two most common types are earthquakes and quarry blasts. 
 ------------------------------------------------------------------------
 
 #### **Q9** What is the average depth of the earthquake type in this data set? Is there anything that seems unusual or surprising in this finding?
 
-```{r}
+```{r} 
+earthquakes |>
+  group_by(type) |>
+  summarise(
+    count_classes = n(),
+    total_depth = sum(depth),
+    mean_depth = mean(depth),
+  ) |>
+  arrange(desc(total_depth))
 
 ```
 
-**A9:**
+**A9:** The average depth for the earthquake type in this data set is 25.24KM. Based on USGS, this shows that at around 25KM deep, these earthquakes are shallow. Shallow earthquakes are between 0 and 70KM deep. It's quite surprising how shallow these earthquakes are and how close they are to sea level. But it may not be because it is harder to detect deeper earthquakes? I'm not sure but this is definitely interesting.
 
 ------------------------------------------------------------------------
 
 #### **Q10** I'm interested, in the future, to see the hours in which earthquakes happen. How can I extract the hour from the time column?
 
 ```{r}
-
+earthquakes <- earthquakes |> 
+  mutate(hour = hour(time))
+  
 ```
 
-**A10:**
+**A10:** Basically create a column that lists the hours by using the mutate function. Now the hour that appears in the new column is rounded up to the hour it happens in. So for example, an earthquake happens at 15:35 and it is rounded up to hour 15 in the new hour column created.
 
 ------------------------------------------------------------------------
 
 #### **Q11** I want to make a note of all the records in this data set that I consider serious. For my purposes, I'm thinking that all tremors that have a magnitude that is larger than 3 are serious. How do I automatically create a new column showing whether an earthquake is serious or not?
 
 ```{r}
+earthquakes <- earthquakes |> 
+  mutate(mag_serious = case_when(
+    mag > 3.0 ~ "Serious",
+    mag <= 3.0 ~ "Not Serious"))
 
 ```
 
-**A11:**
+**A11:** So I initially wasn't able to get create this new column using this code but I checked the syntax in ChatGPT. This was my question: earthquakes <- earthquakes |> 
+  mutate(mag_serious = case_when(
+    mag > "3.0" ~ Serious,
+    mag <= "3.0" ~ Not Serious))
+Where is the syntax error in the code in R?
+This was the answer:
+The code you provided in R contains a syntax error. The issue is with the use of quotation marks around the numeric values in the `case_when` function. In R, when you are comparing numeric values, you should not enclose them in double quotes. 
+
+Basically, I put the quotes on the 3.0 instead of Serious and Not Serious. And swapped it around in the R code and was able to create the column.
 
 ------------------------------------------------------------------------
 
 #### **Q12** I have no idea how earthquakes work and I'm interested in seeing if there is a particular time of day in which serious earthquakes happen. How can I see that condensed in a table with all the hours in a day and all the serious earthquakes in each hour? What is the hour with fewer serious earthquakes and the one with the most serious earthquakes?
 
 ```{r}
-
+earthquakes |> 
+  filter(mag_serious == "Serious") |> 
+  group_by(hour) |> 
+  summarise(count = n()) |> 
+  arrange(desc(count))
+  
 ```
 
-**A12**:
+**A12**: The hour with fewer earthquakes is at 12 noon, with 33 earthquakes. The hour with the most earthquakes is at 2a.m., with 67 earthquakes.
 
 ------------------------------------------------------------------------
 
 #### **Q13** What's another question you are interested in and how would you ask it in R?
+What I want to know is the place with the most number of "Serious" earthquakes in the world. And not surprisingly it is the Izu Islands in the Japan Region, with 118 earthquakes.
 
 ```{r}
-
+earthquakes |> 
+ filter(mag_serious == "Serious") |> 
+  group_by(place) |> 
+  summarise(count = n()) |> 
+  arrange(desc(count))
+  
 ```
