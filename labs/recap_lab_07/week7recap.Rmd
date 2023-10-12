@@ -40,12 +40,12 @@ Most questions have a code block and a space for an answer below. Write the code
 
 #### **Q1** Look at the earthquakes dataset. Finish the sentence below as if you were explaining the data to someone who had not seen it before but needs to know about it.
 
-**A1:** This dataset contains the dates and times as well as the magnitudes of earthquakes that have taken place across the globe in the last one month time period, with the most recent one reported today, October 11, 2023. One interesting point is that the standard time for earthquakes recorded follows Greenwich Mean Time across the world. This data set captures the specific date and time as well as the place where the earthquake occured right down to the coordinates of the location. It also captures the magnitude of the eathquakes.
+**A1:** This data set contains the dates and times as well as the magnitudes of earthquakes that have taken place across the globe in the last one month time period, with the most recent one reported today, October 11, 2023. One interesting point is that the standard time for earthquakes recorded across the world follows Greenwich Mean Time. This data set captures the specific date and time as well as the place where the earthquake occurred right down to the coordinates of the location. It also captures the magnitude of the earthquakes. More than that, it also records tremors other than earthquakes like ice quakes and explosions.
 ------------------------------------------------------------------------
 
 #### **Q2** How many records there are there in this dataset? What do they mean and what useful information we can gather from it, looking at the columns?
 
-**A2:** The records date back to earthquakes captured in the last month, so the time period is between September 11, 2023 to October 11, 2023. 9774 earthquakes were recorded in that one month time period. There are 22 variables/columns and the information gathered from this are the date and time the earthquake happened (right down to the second), the latitude and longitude degree meaning the coordinates for the place where the earthquake happened. 
+**A2:** The records date back to earthquakes captured in the last month, so the time period is between September 11, 2023 to October 11, 2023. 9774 earthquakes were recorded in that one month time frame. There are 22 variables/columns and the information gathered from this are the date and time the earthquake happened (right down to the second), the latitude and longitude degree meaning the coordinates for the place where the earthquake happened alongside the place the earthquake occurred at, and the location source recorded. The magnitude of the earthquake as well as the standard error of the magnitude is recorded. It records the types of tremors and the depth at which the tremor or earthquakes had occurred at. There is more information but this is just a gist and this information can be used to monitor earthquakes that happen and record the magnitude, place and time of them.
 
 ------------------------------------------------------------------------
 
@@ -199,11 +199,20 @@ earthquakes |>
 #### **Q13** What's another question you are interested in and how would you ask it in R?
 What I want to know is the place with the most number of "Serious" earthquakes in the world. And not surprisingly it is the Izu Islands in the Japan Region, with 118 earthquakes.
 
+On a separate note, there was apparently another earthquake hit Afghanistan today or a few hours ago. Was there any way of detecting that without knowing the region a quake would hit and when? 
+ 
 ```{r}
 earthquakes |> 
  filter(mag_serious == "Serious") |> 
   group_by(place) |> 
   summarise(count = n()) |> 
   arrange(desc(count))
+  
+```
+```{r}
+earthquakes |> 
+ filter(mag_serious == "Serious") |> 
+  group_by(place) |> 
+  arrange(desc(mag))
   
 ```
