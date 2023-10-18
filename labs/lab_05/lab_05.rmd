@@ -20,7 +20,11 @@ knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 
 # Load the tidyverse, plus any other packages you will need to clean data and work with dates.
-
+options(scipen=999)
+library(tidyverse)
+library(lubridate)
+library(refinr)
+library(janitor)
 ```
 
 ## Get Our PDF
@@ -37,37 +41,98 @@ Save the CSV (it should be called `tabula-Baltimore County; Carey, Samantha log 
 
 From there, you will need to read in the data, and add or fix headers if necessary. You can choose to include the headers from the PDF in your exported CSV files OR to exclude them and add them when importing. `read_csv` allows us to do this ([and more](https://readr.tidyverse.org/reference/read_delim.html)).
 
-## Load and clean up the data in R
+```{r}
+#read data
+baltimore_county_od <- read_csv("data/tabula-Baltimore County; Carey, Samantha log OD.csv", col_names = FALSE)
+baltimore_county_od
+```
 
 You will need to read in and clean up the data so that it can be used for analysis. By "clean" I mean the column headers should not contain spaces and they should have meaningful names, not "x1" or something similar. How you do that is up to you, but you can use select() with or without the minus sign to include or exclude certain columns. You also can use the `rename` function to, well, rename columns. Importantly, you'll need to ensure that any columns containing a date actually have a date datatype. Our friend `lubridate` can help with this.
 
 ```{r}
+#clean headers
+baltimore_county_od_clean <- read_csv("data/tabula-Baltimore County; Carey, Samantha log OD.csv", col_names = FALSE) |> 
+  clean_names() |> 
+  rename(DATE = x1, TIME = x2, CASE_NUMBER= x3, EVTYP = x4, LOCATION = x5)
+
+#clean dates
+baltimore_county_od_clean <- baltimore_county_od_clean |> 
+  mutate(DATE=mdy(DATE))
+
+baltimore_county_od_clean
+
 ```
 
 ## Answer questions
 
 Q1. Write code to generate the number of calls that occurred on each date. Which date in 2022 had the most overdose calls, and how many? Look at the total number of rows in your result and explore the range of dates - based on your result, do you believe there are any days with no overdose calls at all? Explain why or why not.
 
-A1.
+A1. The dates with the most number of overdose calls at 23 calls were July 14, 2022 and October 10, 2022. There are only 329 rows and in 2022, there were 365 days. So we are missing 36 days of data, that being the calls made in January 2022 and the first 5 days of February 2022. This is because the time frame for data set is from February 6, 2022 to February 6, 2023. Based on our code, we are looking for calls made (and there was at least one call or more every single day) from February 6, 2022 to December 31, 2022. I don't believe there are any days with no calls at all because from this data it looks like there is at least one call or more every day in the data set.
 
 ```{r}
+baltimore_county_od_clean |> 
+    filter(str_detect(DATE, "2022")) |> 
+    group_by(DATE) |>
+  summarise(
+    count_dates = n()
+  ) |> 
+  arrange(desc(count_dates))
+
 ```
 
 Q2. You want to understand if there's a pattern in the day of the week that overdose calls are made. Add a column to your dataframe that displays what day of the week each date represents. You should search for how to do that using lubridate. Then write code to calculate the number of calls for each day of the week, and add a column to that result that calculates the percentage of all calls that occurred on each day of the week (so you want a dataframe with the day of the week, total number of calls and the percentage of calls on that day out of the total number of all calls). Describe your findings to me.
 
-A2.
+A2. So I had to look up ChatGPT and get some help from my classmates on this. This is the question I asked ChatGPT: How to create a new column in a data frame that displays the day of the week for each date using the lubridate package in R and they recommended using the wday function in lubridate.
+
+I tried to use the ChatGPT code for calculating percentage using group_by but I could not understand how to use it so I ended up using mutate to calculate the percentage. 
+
+According to the dataframe with the percentage, Saturday has the highest number of calls at 638 and percentage of number of calls per day at 15.5%. The next day of the week with the highest number of calls at 621 and percentage calls at 15.1% is Sunday. From that, it shows that most OD calls tend to come in during the weekend, instead the week day. Another important note, the day with the third highest number of calls and percantage of calls is Friday. So, more calls are made towards and on the weekend.
 
 ```{r}
+baltimore_county_od_clean <- baltimore_county_od_clean |> 
+  mutate(
+    DAY = wday(DATE, label=TRUE, abbr=FALSE)
+  ) 
+   
+
+baltimore_county_od_clean
+```
+```{r}
+baltimore_county_od_day <- baltimore_county_od_clean |> 
+group_by(DAY) |> 
+  summarise(
+    count=n(),
+  ) |> 
+
+mutate(
+  pct_calls= (count/sum(count))*100
+) |> 
+
+arrange(desc(pct_calls))
+
+baltimore_county_od_day
 ```
 
 Q3. Now let's look at locations. Which ones have the most calls? How would you describe them (feel free to search for more information on them)? Is there anything about the structure of the original data that might make you less confident in the counts by location or date?
 
-A3.
+A3. The location with the highest number of calls at 36 calls coming from them is with the address 4540 Silver Spring Road. The number of calls for this location is almost 3 times the number of calls made by the second and third locations with the highest number of calls, which are PC 02; 6424 Windsor Mill Road and PC 06; 115 Susquehanna AV W respectively. 
+
+So 4540 Silver Spring Road might be just a house, according to zillow. PC 02; 6424 Windsor Mill Road and PC 06; 115 Susquehanna AV W are Baltimore County police department precincts. Regarding the first place being house, this may be a house where people go to do drugs. I wonder why calls were made at police department precincts. Is it because those who are taken in by the police for doing drugs overdose after being taken in, then the police would have to make a phone call. However, why wouldn't the police have a direct emergency number instead of using 911 for an OD case. Is it because 911 would respond faster? Is it because in a state of panic, 911 is what comes to mind? But aren't police officers trained to respond or react to such scenarios?
+
+Regarding the structure of the original data, I guess the fact that we are using tabula and selecting the data we want and might miss out on some data is quite concerning if we do miss it out. I think for the location, sometimes if the data is not cleaned the same location could have several variations such as 4540 Silver Spring Rd or 4540 Silver Spring Road and this might make us miss out on the counts by location. 
+The dates on the other hand start from February 6, 2022 to February 5, 2023. Looking at the original data, one call from February 6, 2023 is recorded in this data which should not be according to this data frame. Another thing is that the original date column were characters instead of numerical.  
 
 ```{r}
-
+baltimore_county_od_clean |> 
+  group_by(LOCATION) |> 
+  summarise(
+    count=n()
+  ) |> 
+arrange(desc(count))
 ```
 
 Q4. What's the best story idea or question you've seen as a result of the work you've done in this lab?
 
-A4.
+A4. It would be really interesting to investigate why the second and third highest OD calls were made from police precincts. 
+
+Note: Why does the timeframe for this dataframe begin on 6 February to 5 February?
