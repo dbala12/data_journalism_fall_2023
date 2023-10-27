@@ -16,7 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 
 # load your libraries
-
+library(tidyverse)
+library(lubridate)
+library(janitor)
 ```
 
 ## Getting Started
@@ -26,31 +28,78 @@ This week we'll be combining and joining data to make it more useful and to ask 
 *Before* you combine them you'll need to clean up some of the column names to make the data easier to work with - make sure you have loaded the library to do that. You also need to make sure that each column has the same name and datatype (you can check the datatypes using `glimpse`). If any of them does not, you need to fix that.
 
 ```{r}
-# load and combine the call data from those three counties
+# load the call data from those three counties
+od_calls_allegany <- read_csv("data/allegany_911.csv") |> clean_names()
+od_calls_cecil <- read_csv("data/cecil_911.csv") |> clean_names()
+od_calls_carroll <- read_csv("data/carroll_911.csv") |>  clean_names()
+
+# combine the call data for the three counties
+od_calls_combined <-  bind_rows(list(od_calls_allegany, od_calls_cecil, od_calls_carroll))
+View(od_calls_combined)
 ```
 
 Then we'll join some demographic data with Baltimore City 911 calls and ask some questions of that. For that, you'll need to load the Baltimore City 911 data and the ZCTA demographic data from the data folder, and join them based on the zip code. Remember, the zip codes in both dataframes must be the same datatype (and should be characters). You should start with your Baltimore City 911 dataframe in creating your join.
 
 ```{r}
-# load and join the Baltimore-related data
+# load the Baltimore-related data
+od_calls_baltimore <- read_csv("data/baltimore_911.csv") |> clean_names()
+maryland_zcta <- read_csv("data/maryland_zcta.csv") |> clean_names()
+
+# change zip codes from numerics to characters
+maryland_zcta <- maryland_zcta |> mutate(zcta5n = as.character(zcta5n))
+od_calls_baltimore <- od_calls_baltimore |> mutate(zip_code = as.character(zip_code))
+
+# join demographic data with Baltimore City 911 calls
+baltimore_calls_maryland_zipcode<- od_calls_baltimore |> left_join(maryland_zcta, join_by(zip_code == zcta5n))
+
+view(baltimore_calls_maryland_zipcode)
 ```
 
 ## Answer questions
 
 Q1. Let's start with our data from Allegany, Cecil and Carroll counties. Write code to generate a dataframe that shows the total number of calls for each county. What's the order of counties from most calls to least?
 
-A1.
+A1. The order of counties from most calls to the least is Carroll county with 448 calls, Cecil county with 438 calls and Allegany county with 418 calls.
 
-```{r}
+```{r} 
+county_total_calls <- od_calls_combined |> 
+ group_by(county) |> 
+summarise(
+    count_total_calls=n()
+  ) |>
+  arrange(desc(count_total_calls))
+```
 ```
 
 Q2. In your combined dataframe that you used in A1, add a column for the month of each call, then write code to show the total number of calls per county and month. Are there any outliers or noteworthy results? Describe the general pattern of the results.
 
 Then calculate the most calls per county and location. Which location had the most calls - where and what is that location?
 
-A2.
+A2. So for the first code in showing the total number of calls per county and month, I grouped them by month and then county so that I was able to compare the number of calls per month and then by county. From the data it seems that Cecil and Allegany had the highest number of calls in August with 55 and 50 calls. Interestingly, Allegany has the second to fifth highest number of total calls in the months of August (50), September (49), May (45) and July (45). Allegany also has the least number of calls out of all counties in November (17) and January (18).
 
-```{r}
+The next code chunk calculates the total number of calls per location for each county. The location with the most number of calls is 314 GROVE NECK RD EARLEVILLE, MD in Cecil County with 15 calls in total. I googled the address and found this https://recoverycentersofamerica.com/locations/bracebridge-hall/. It seems that the address belongs to a recovery center in Cecil and I guess the location and the data do correlate. 
+  
+
+```
+```{r} 
+county_total_calls <- od_calls_combined |>
+    mutate(
+    month = month(date, label=TRUE, abbr=FALSE)
+  ) |> 
+    group_by(month, county) |> 
+      summarise(
+        total_calls_month = n()
+      ) 
+   
+```
+```{r} 
+county_location_calls <- od_calls_combined |>
+    group_by(county, location) |> 
+      summarise(
+        total_calls_location = n()
+      ) |> 
+arrange(desc(total_calls_location))
+   
 ```
 
 Q3. Let's turn to the Baltimore City data. You're interested in exploring calls in zip codes with a high percentage of children under 18. Write code to isolate calls in zip codes where the percentage of under 18 population is at least 75% and then show the zip code and population and how many calls occurred in each of those zip codes.
@@ -61,14 +110,59 @@ Add a column to your code that calculates the number of calls per 1,000 people f
 
 Which zip code has the highest rate of calls per 1,000 people? Find the neighborhoods in that zip code that are listed in the data - you can use group_by or distinct to do this. What are some of those neighborhoods, and what else can you tell me about the population there?
 
-A3.
+A3. Regarding the where are the zip codes, the zip codes are (from most calls to least) 21217, 21223, 21202, 21213, 21201, 21216 and 21205. It seems that 21217 is Druid, 21223 is Franklin, 21202 is in Baltimore City itself, 21213 is Clifton, 21201 is West Baltimore City, 21216 is further west of Baltimore (north west) and 21205 is East Baltimore. It seems like the zip codes are located mainly north of the city. https://planning.maryland.gov/MSDC/Documents/zipcode_map/2012/bacizc12.pdf
+
+The zip code with the highest rate with 18.9 calls per 1,000 people is 21201. The neighborhoods in the zip code is Downtown with 119 calls and Upton with 38 calls. Charles North	had 32 calls, Seton Hill had	22	calls, Mount Vernon had 19 calls and University Of Maryland (Baltimore) had	17 calls. From the get go, I can derive that University of Maryland would be mostly students. From the data, it shows that the population in Downtown has a high percentage of under 18s. Interestingly, most of these places have a high percentage of people renting.
+
+
 
 ```{r}
+baltimore_calls_maryland_zipcode |> 
+  filter(pct_under_18 >= 75) |> 
+  group_by(zip_code, population) |> 
+  summarise(
+    total_calls_zipcode = n()
+  ) |> 
+  arrange(desc(total_calls_zipcode))
+  
+```
+
+```{r}
+baltimore_calls_maryland_zipcode |> 
+  filter(pct_under_18 >= 75) |> 
+  group_by(zip_code, population) |> 
+  summarise(
+    total_calls_zipcode = n()
+  ) |> 
+  summarise(calls_percapita=total_calls_zipcode/population*1000)
+  
+```
+```{r}
+baltimore_calls_neighborhood <- baltimore_calls_maryland_zipcode |> 
+  filter(zip_code == 21201) |> 
+  group_by(neighborhood) |> 
+  summarise(
+    total_calls_21201 = n()
+  ) |> 
+  arrange(desc(total_calls_21201))
+  
 ```
 
 Q4. Choose your own adventure: I want you to come up with a question you could ask of the Baltimore City data that combines both the calls and the demographic information. You must use both demographics and the overdose call data in your work.
 
-A4:
+A4: I want to find out the area with the highest percentage of homeowners and then location with the highest total number of phone. That is 5200 YORK RD BALTIMORE MD which is apparently a CVS.
 
 ```{r}
+baltimore_calls_maryland_zipcode |> 
+  filter(pct_homeowner >= 50) |> 
+  group_by(location) |> 
+  summarise(
+    total_calls_homeowner = n()
+  ) |> 
+arrange(desc(total_calls_homeowner))
+
+  
+ 
+
+
 ```
