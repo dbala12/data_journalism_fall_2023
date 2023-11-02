@@ -24,6 +24,9 @@ You'll need to load two packages for this: the tidyverse and tidycensus.
 options(scipen=999)
 
 # Load the tidyverse.
+library(tidyverse)
+library(tidycensus)
+library(janitor)
 ```
 
 ## Setup Census API
@@ -33,6 +36,7 @@ You'll need your Census API Key:
 **Task** set your API Key if you haven't already. You won't need to install or overwrite it.
 
 ```{r echo=FALSE}
+census_api_key("6c6f00214ef0eb2cab5b4ff78cf0bd45c520fec3", install=TRUE, overwrite=TRUE)
 ```
 
 ## Load and view ACS variables
@@ -42,20 +46,30 @@ You'll also need to load the list of American Community Survey variables from th
 **Task** load the variables from the 2021 5-year ACS (which is called "acs5") and save them to a dataframe
 
 ```{r}
+acs5 <- load_variables(2021, "acs5", cache = TRUE) 
+view(acs5)
 ```
 
 ## Answer questions
 
 **Q1** What is the Maryland jurisdiction with the lowest median age, according to the ACS 2021 5-year estimates? You will need to find the variable for median age first. 
-**A1** 
+**A1** The Maryland jurisdiction with the lowest median age is Baltimore city. The variable I used was B01002_001 for median age by sex.
 
 ```{r}
+med_age <- get_acs(geography = "county",
+              variables = c(medianage = "B01002_001"),
+              state = "MD",
+              year = 2021) |> 
+arrange(estimate)
 ```
 
 **Q2** Which Maryland counties have a median age of at least 50? You can use the dataframe you just made to answer this, but you must write code to display only those counties with a median age of at least 50. 
-**A2** 
+**A2**  It is Talbot County at an estimate median age of 51.0 and Worcester County at an estimate median age of 50.4.
 
 ```{r}
+med_age |> 
+  filter(estimate >= 50) |> 
+  group_by(NAME) 
 ```
 
 **Q3** We're interested in knowing more about Montgomery County zip codes where overdose calls are coming from and the demographic characteristics they possess. In particular, we want to calculate a rate of calls per 1,000 population. To do this, you'll need to:
@@ -69,19 +83,65 @@ You'll also need to load the list of American Community Survey variables from th
 
 Which zip code has the highest rate of calls? Which has the lowest?
 
-**A3** 
+**A3**  The zip code with the highest rate of calls (1.70 rate of calls per 1,000 population) is 20877, which is in Gaithersburg, Montgomery. The zip code with the lowest rate of calls (0.04 rate of calls per 1000 population) is 20707, which is in Laurel. 
 
+Just want to note that there is a zip code, 20889 at the lowest part of the list with NA on most columns.
 ```{r}
+montgomery_calls <- read_csv("data/montgomery_2022_overdoses.csv") 
+
+montgomery_calls <- montgomery_calls |> 
+mutate(zip = as.character(zip))
+
+montgomery_calls_zip <- montgomery_calls |> 
+  group_by(zip) |> 
+   summarise(
+    total_calls_zipcode = n())
+
+md_acs_zipcodes <- get_acs(geography = "zcta",
+              variables = c(population = "B09021_001"),
+              state = "MD",
+              year = 2019) 
+
+montgomery_acs_zip <- montgomery_calls_zip |> left_join(md_acs_zipcodes, by = c('zip'='GEOID')) 
+
+montgomery_acs_zip <- montgomery_acs_zip |> 
+  rename(pop_estimate_18_up = estimate)
+
+montgomery_acs_zip |> 
+  mutate(
+    call_rate =(total_calls_zipcode/pop_estimate_18_up)*1000) |> 
+    arrange(desc(call_rate))
+  
 ```
 
 **Q4** Using [CensusReporter.org](https://censusreporter.org/), examine the zip codes with the highest and lowest rates and compare and contrast their demographic profiles. Is there a story here?
 
-**A4** 
+**A4** So the zip code for the highest call rates is in Gaithersburg and the zip code with the lowest call rates is in Laurel. Based on [CensusReporter.org](https://censusreporter.org/), the median age for Gaithersburg or zip code 20877 is 37.6 years, with 62% of the population between the ages of 18 and 65 years. Meanwhile the median age for Laurel or zip code 20707 is 38 years, with 64% of the population between the ages of 18 and 65 years. So there isn't much difference in median age for both zip codes. 
+
+In terms of sex, the zip code in Laurel has a slightly higher female population compared to at 53% and the zip code in Gaithersburg has male and female population at 50% each. If we can compare (and there isn't much here), we can say that the zip code with the lowest rate of calls per 1,000 population had a slightly higher female population compared to male (interesting that it's only binary, how would they track individuals who identify differently?).
+
+As for race, the zip code in Laurel has a higher Black population at 45% compared to the white population at 22%, Hispanic population at 16% and Asian population at 11%. Meanwhile, the zip code in Gaithersburg has a high Hispanic population at 42% compared to the white population at 21%, the Black population at 18% and the Asian population at 16%. I think this might be a good focus for a story, maybe.
+
+Another thing to note is that Laurel is between 4 different counties. According to USA.com (http://www.usa.com/20707-md.htm), the zip code 20707 is touches on Montgomery County and Prince George's County. In a way, the low number of calls may also be attributed to the fact that most 911 calls may be rerouted to PG County.
 
 **Q5** Go back to your joined dataframe from Q3 and add two more columns representing the minimum and maximum populations based on the estimate and margin of error, then calculate per capita rates for each. Do you get the same two zip codes for the highest and lowest as you did before? Does that give you more or less confidence in your answers to Q3?
 
-**A5** 
+**A5** So I chose the to arrange the maximum estimate per capita from highest to lowest and got the zip codes 21794 for the highest and 20854 for the lowest. These zip codes are different from my answers in question 3. So definitely less confidence. Would this because there is an overlap in estimate population and margin of error?
 
 ```{r}
+montgomery_acs_zip <- montgomery_acs_zip |> 
+  mutate(
+    min_est = (pop_estimate_18_up - moe),
+    max_est = (pop_estimate_18_up + moe)
+  )
+
+montgomery_acs_zip_percapita <- montgomery_acs_zip |> 
+  mutate(
+    min_est_percapita = (min_est/pop_estimate_18_up),
+    max_est_percapita = (max_est/pop_estimate_18_up)
+  ) |> 
+arrange(desc(max_est_percapita))
+
+```
 ```
 
