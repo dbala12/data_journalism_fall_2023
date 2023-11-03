@@ -122,11 +122,11 @@ In terms of sex, the zip code in Laurel has a slightly higher female population 
 
 As for race, the zip code in Laurel has a higher Black population at 45% compared to the white population at 22%, Hispanic population at 16% and Asian population at 11%. Meanwhile, the zip code in Gaithersburg has a high Hispanic population at 42% compared to the white population at 21%, the Black population at 18% and the Asian population at 16%. I think this might be a good focus for a story, maybe.
 
-Another thing to note is that Laurel is between 4 different counties. According to USA.com (http://www.usa.com/20707-md.htm), the zip code 20707 is touches on Montgomery County and Prince George's County. In a way, the low number of calls may also be attributed to the fact that most 911 calls may be rerouted to PG County.
+Another thing to note is that Laurel is between 4 different counties. According to USA.com (http://www.usa.com/20707-md.htm), the zip code 20707 is touches on Montgomery County and Prince George's County. In a way, the low number of calls may also be attributed to the fact that most 911 calls may be rerouted to Prince George's County.
 
 **Q5** Go back to your joined dataframe from Q3 and add two more columns representing the minimum and maximum populations based on the estimate and margin of error, then calculate per capita rates for each. Do you get the same two zip codes for the highest and lowest as you did before? Does that give you more or less confidence in your answers to Q3?
 
-**A5** So I chose the to arrange the maximum estimate per capita from highest to lowest and got the zip codes 21794 for the highest and 20854 for the lowest. These zip codes are different from my answers in question 3. So definitely less confidence. Would this because there is an overlap in estimate population and margin of error?
+**A5** So I chose the to arrange the maximum estimate per capita from highest to lowest and got the zipcodes 20877 as the highest and 20707 as the lowest. It works!
 
 ```{r}
 montgomery_acs_zip <- montgomery_acs_zip |> 
@@ -137,8 +137,8 @@ montgomery_acs_zip <- montgomery_acs_zip |>
 
 montgomery_acs_zip_percapita <- montgomery_acs_zip |> 
   mutate(
-    min_est_percapita = (min_est/pop_estimate_18_up),
-    max_est_percapita = (max_est/pop_estimate_18_up)
+    min_est_percapita = (total_calls_zipcode/min_est)*1000,
+    max_est_percapita = (total_calls_zipcode/max_est)*1000
   ) |> 
 arrange(desc(max_est_percapita))
 
