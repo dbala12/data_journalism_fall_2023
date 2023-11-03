@@ -40,7 +40,7 @@ The `install=TRUE` part saves your key for future use.
 
 So to give you some idea of how complicated the data is, let's pull up just one file from the decennial Census. We'll use Summary File 1, or SF1. That has the major population and housing stuff.
 
-### Task 3: Examining Census data
+### Task 3: Examining Census dreaata
 
 **Task** Run the following codeblock and look at the resulting variable.
 
@@ -216,7 +216,7 @@ The Census Bureau has Zip Code Tabulation Areas - they are mostly identical to w
 ```{r}
 md_zipcodes <- get_acs(geography="zcta", variables = "B19013_001", state='MD', year=2019)
 md_high_schools_with_acs <- md_high_schools |> left_join(md_zipcodes, by=c('zip'='GEOID'))
-md_high_schools_with_acs <- md_high_schools_with_acs |> mutate(min=(estimate-moe), max=(estimate+moe)) |> drop_na()
+
 ```
 
 **Task** Let's look at the average household income for high schools that have 60% or more graduates immediately enrolling in college, and then look at those with less than 40%. Write a sentence describing the results. **Answer** 
