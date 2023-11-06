@@ -33,7 +33,7 @@ The dataset we'll use is 911 overdose calls from Baltimore County. Let's load it
 ### Task 2: Load data
 
 **Task** Run the following code to load the data. In the space below, indicate how many rows and columns it has. **Answer**
-
+There are 3822 rows and 4 columns. 
 ```{r}
 baltco_911_calls <- read_csv("data/baltco_911_calls.csv")
 ```
@@ -53,7 +53,7 @@ First, we'll add a month column to our dataframe using lubridate.
 ### Task 3: Add a month column to our 911 calls dataframe using lubridate and calculate the number of calls for each month
 
 **Task** Run the following code to add a month column to our dataframe using lubridate and count the number of calls for each month. In the space below, explain what each step of the code below is doing in English. Note the "label=TRUE" part in the mutate statement. **Answer**
-
+Basically we are creating a new data frame using the Baltimore 911 overdose calls. In this new data frame, we are creating and adding a new month column using lubridate, where the "label=TRUE" gives us names or abbreviations of the months, instead of the months in numbers. For example, Jan or January instead of 01. We then calculate the total number of OD calls for each of these months. So the new data frame has 2 columns, that being months and the total number of OD calls for each month, and then the arrange function arranges the data based on the months in descending order with the highest total number of calls to the lowest total number of calls. 
 ```{r}
 baltco_911_calls_by_month <- baltco_911_calls |>
   mutate(month = month(date, label=TRUE)) |> 
@@ -71,7 +71,7 @@ With ggplot, the first thing we'll always do is draw a blank canvas that will co
 ### Task 4: Create an empty ggplot container
 
 **Task** Run the following code. Explain what you see after running the code in the space below. **Answer**
-
+It is an empty gray box. I am guessing the ggplot() function has given us our blank canvas where we will build our charts on.
 ```{r}
 baltco_911_calls_by_month |>
   ggplot()
@@ -101,7 +101,7 @@ After we've invoked the ggplot() function, you'll notice we're using a + symbol.
 
 ### Task 5: Run the following code
 
-**Task** Run the following code. Explain what you see after running the code in the space below. **Answer**
+**Task** Run the following code. Explain what you see after running the code in the space below. **Answer** There is a bar chart on our blank canvas! So the geom_bar function has created a bar chart and the (aes(x=)) function, which is the aesthetics function has named the x-axis as the month that we called from the baltco_911_calls_by_month dataframe created. the bar charts are sized by the total calls per month. The total call per months is the y-axis, titled 'count'. 
 
 ```{r}
 baltco_911_calls_by_month |>
@@ -113,7 +113,7 @@ This is a very basic chart. But it's hard to derive much meaning from this chart
 
 ### Task 6: Run the following code
 
-**Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last codeblock? **Answer**
+**Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last codeblock? **Answer** The bars, which are the total calls per month, are arranged in ascending order, from the months with the lowest total number of calls to the months with the highest total number of calls.
 
 ```{r}
 baltco_911_calls_by_month |>
@@ -125,8 +125,7 @@ This is a little more useful. But the bottom is kind of a mess, with overlapping
 
 ### Task 7: Run the following code
 
-**Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last codeblock? **Answer**
-
+**Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last codeblock? **Answer** The coord_flip() function flipped the x and y axis with each other. 
 ```{r}
 baltco_911_calls_by_month |>
   ggplot() +
@@ -145,7 +144,7 @@ It's kind of like applying CSS to html. Here I'm changing the theme slightly to 
 ### Task 8: Run the following code
 
 **Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last codeblock? **Answer**
-
+The theme_minimal() feature has taken away the gray background of the blank canvas and given the bar chart a minimal "lool".
 ```{r}
 baltco_911_calls_by_month |>
   ggplot() +
@@ -171,7 +170,7 @@ And now we'll apply the economist theme from that package with theme_economist()
 
 ### Task 10: Run the following code
 
-**Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last version of the chart? **Answer**
+**Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last version of the chart? **Answer** There is a blue background that is similar to the theme of bar charts in the Economist. The lines in the background is white and the bars are gray-ish. It looks a little nicer to look at, which would be able to attract the reader.
 
 ```{r}
 baltco_911_calls_by_month |>
@@ -186,7 +185,7 @@ Those axis titles are kind of a mess. Let's change "count" on the x axis to "tot
 ### Task 11: Run the following code
 
 **Task** Run the following code. Explain what you see after running the code in the space below. What has changed from the last codeblock? **Answer**
-
+A title has been given to our bar chart. The names/titles for the x and y axis have been changed to simpler names/titles too.
 ```{r}
 baltco_911_calls_by_month |>
   ggplot() +
@@ -214,7 +213,7 @@ So, let's use the same Baltimore County data and generate a count of contributio
 
 ### Task 12: Create a dataframe of 911 calls by date
 
-**Task** Run the following code. Explain what you see after running the code in the space below. **Answer**
+**Task** Run the following code. Explain what you see after running the code in the space below. **Answer** A dataframe with the total calls by the date in a month. It is for everyday of the year.
 
 ```{r}
 baltco_911_calls_by_date <- baltco_911_calls |>
@@ -232,7 +231,7 @@ We'll put the date on the x axis and total contributions on the y axis.
 
 ### Task 13: Run the following code
 
-**Task** Run the following code. Explain what you see after running the code in the space below. **Answer**
+**Task** Run the following code. Explain what you see after running the code in the space below. **Answer** There is a line graph based on the data frame created above. The line graph has an x-axis indicating the dates and the y-axis indicating the total calls for each date. Each point of the line chart is marked based on the number of total calls for the date. Honestly, this line graph shows that the calls made per date fluctuates quite a lot, but if we look at the background of the calls, it seems like the average number of calls made everyday is between 5 to 15 calls. It also looks like the number of calls are somehow decreasing towards the end of the year.
 
 ```{r}
 baltco_911_calls_by_date |>
@@ -250,7 +249,7 @@ We'll set the date_breaks to appear for every week; if we wanted every month, we
 
 ### Task 14: Run the following code
 
-**Task** Run the following code. Explain what you see after running the code in the space below. **Answer**
+**Task** Run the following code. Explain what you see after running the code in the space below. **Answer** The change I see is that the x-axis. It seems like the scale_x_date function breaks the dates on a one week basis. To my understanding the date_labels = "%b %d" codes the date to the month abbreviation and then the date. But this has made the x-axis look very crowded. Also, I'm not sure if it is related but it seems like there are more background boxes. Is this because the x-axis has been scaled?
 
 ```{r}
 baltco_911_calls_by_date |>
@@ -263,7 +262,7 @@ Those are a little hard to read, so we can turn them 45 degrees to remove the ov
 
 ### Task 15: Run the following code
 
-**Task** Run the following code. Explain what you see after running the code in the space below. **Answer**
+**Task** Run the following code. Explain what you see after running the code in the space below. **Answer** So the theme(axis.text.x = element_text (angle = 45, hjust=1)) has just been able to tilt the text elements in the x axis by 45 degrees and this makes it somewhat readable.
 
 ```{r}
 baltco_911_calls_by_date |>
