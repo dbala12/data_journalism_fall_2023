@@ -39,6 +39,7 @@ Get the geometry for Maryland's counties using tigris and, joining that datafram
 **A1.** PG County and Baltimore City jave the lowest difference in percentage change between Moore and Brown, which is not so surprising. I would say it would be interesting to look into why there is such a discrepancy in percentage difference in Carroll, Harford, Kent and Worcester County.
 
 ```{r}
+#Read data
 md_statewide_county <- read_csv("data/md_statewide_county.csv")
 ```
 ```{r}
@@ -65,25 +66,29 @@ md_statewide_county <- md_statewide_county |>
   group_by(County) |> 
   mutate(vote_pct_diff=moore_pct-brown_pct)
 
+#change GEOID in md_statewide_county to a character column
 md_statewide_county <- md_statewide_county |> 
   mutate(GEOID = as.character(GEOID))
 ```
 
 ```{r}
+#Getting the county data
 counties <- counties()
 glimpse(counties)
 ```
 ```{r}
+#Filter to select counties in Maryland
 md_counties <- counties |>
   filter(STATEFP == "24") 
-  
 ```
 
 ```{r}
+#Join the governor and ag votng data with the MD County dataset
 md_votes <- md_counties |> left_join(md_statewide_county, join_by(GEOID==GEOID))
 ```
 
 ```{r}
+#Create the map for using the dataset
 county_centroids <- st_centroid(md_votes)
 county_centroids_df <- as.data.frame(st_coordinates(county_centroids))
 county_centroids_df$NAME <- county_centroids$NAME
@@ -97,11 +102,53 @@ ggplot() +
 
 **Q2.** Make a county-level map to explore the number of customers impacted by power outages in Maryland from last March. Load the `county_outages_march2023.csv` file in the data folder and calculate a rate of customers with outages per 10,000 total customers for each county. Then join that dataframe to your Maryland counties dataframe you made in Q1 and create a county-level map of the results; you may need to tweak the fill scale to make the distinctions clearer. What's the potential story here? Given access to other months' outage data, what would your next steps be in reporting a story?
 
-**A2.**
+**A2.** According to this map it seems like Talbot County has the highest rate of customers who have experienced outages per 10,000 customers in March 2023 and the story here is why did Talbot County experience such a high rate of outages in March. According to the news, DC, MD and Virginia experienced high winds in late March and early April 2023. Talbot County was one of the counties that got a tornado alert. However, it is weird that only Talbot County had the highest rate of power outages. With access to the other months' outage data, I would look into the outage in Talbot County and see if it was still high rates of outages or if March was only a one time thing. 
 
 ```{r}
+#Read data
+county_outages_march2023 <- read_csv("data/county_outages_march2023.csv")
+```
+```{r}
+#Calculate the rate of customers with outages per 10,000 total customers for each county
+county_outages_march2023 <- county_outages_march2023 |> 
+  group_by(county) |> 
+  mutate(rate_customers=(outage_customers/total_customers)*10000)
 ```
 
+```{r}
+#Setting up the county dataframe
+counties <- counties()  
+glimpse(counties)
+
+#Filter to select counties in Maryland
+md_county <- counties |>
+  filter(STATEFP == "24") 
+
+#clean md_county datasets
+md_county <- md_county |> 
+  clean_names() |> 
+  rename(county = namelsad) |> 
+  mutate(county = str_to_title(str_remove_all(county, " County"))) |> 
+  mutate(county = str_trim(county,side="both")) 
+```
+```{r}
+#Join the outage data with the county data
+md_outage_march <- md_county |> 
+  left_join(county_outages_march2023, join_by(county==county))
+```
+
+```{r}
+#Create the map for using the dataset
+county_centroids <- st_centroid(md_outage_march)
+county_centroids_df <- as.data.frame(st_coordinates(county_centroids))
+county_centroids_df$county <- county_centroids$county
+
+ggplot() +
+  geom_sf(data=md_outage_march, aes(fill=rate_customers)) +
+  geom_text(aes(x = X, y = Y, label = county), data = county_centroids_df, size = 3, check_overlap = TRUE) +
+  theme_minimal() +
+  scale_fill_viridis_b(option="magma",trans = "log")
+```
 **Q3.** You've been assigned a story about the use of electric vehicles in Maryland and you want to make a map of the prevalence of electric vehicles in each county. Load the `ev_2020_2023.csv` file, which has the number of electric and hybrid vehicles per county from July 2020 and March 2023 and calculate a percentage change for each county (remember, that's `new-old/old`). Using the Maryland counties dataframe you made for Q1, make a county map showing the percentage change. What counties stand out to you? What questions do you have about the changes you're seeing?
 
 Next, use tidycensus to retrieve county population data for Maryland from 2021 (you did this in the pre_lab) and join it to your vehicles dataframe. HINT: you may not need to join it on the county name, and you should already have the geometry!
@@ -110,7 +157,100 @@ Then, calculate a per capita rate of electric & hybrid vehicles using the March 
 
 Finally, make a second county map showing the per capita rate. What counties stand out on this map? How is it different from the first one you made?
 
-**A3.**
+**A3.** Well Caroline county with the highest percentage of change for electric vehicle use between 2020 and 2023 is interesting. I am a little surprised that Prince George's County and Montgomery County has a mediocre percentage change in EV use as these are the two counties that had more charging ports in the beginning of 2023. So my question is, do the increased number of charging ports help increase the EV use in the counties or are the increased charging ports due to the increase in EV use in the counties? What makes people in the counties to use EV. Also, is there any way of increasing a bigger uptake of EV use in more rural counties? 
+
+According to the second map, Howard and Montgomery county has the highest rate of EV use in March 2023. Montgomery County makes sense as they added more charging stations in the beginning of 2023. A Baltimore Sun article that came out in October 2023 noted that Howard County has a growing number of EV users. Meanwhile, Caroline county has a lower rate. I think Dorchester has a higher rate than percentage. Garrett and Somerset has a medium percentage and low rate of EV use.
+
 
 ```{r}
+#Read data
+ev_2020_2023 <- read_csv("data/ev_2020_2023.csv")
 ```
+```{r}
+#Calculate percentage change for each county
+ev_2020_2023 <- ev_2020_2023 |> 
+  group_by(county) |> 
+  mutate(pct_diff = ((march_2023 - july_2020) / july_2020)*100 )
+```
+
+```{r}
+#Setting up the county dataframe
+counties <- counties()  
+glimpse(counties)
+
+#Filter to select counties in Maryland
+md_county_data <- counties |>
+  filter(STATEFP == "24") 
+
+#clean md_county_data datasets
+md_county_data <- md_county_data |> 
+  clean_names() |> 
+  rename(county = namelsad) |> 
+  mutate(county = str_to_title(str_remove_all(county, " County"))) |> 
+  mutate(county = str_trim(county,side="both")) 
+```
+```{r}
+#Join the ev_data with the county data
+md_ev_use <- md_county_data |> 
+  left_join(ev_2020_2023, join_by(county==county))
+```
+
+```{r}
+#Create the map for using the dataset
+county_centroids <- st_centroid(md_ev_use)
+county_centroids_df <- as.data.frame(st_coordinates(county_centroids))
+county_centroids_df$county <- county_centroids$county
+
+ggplot() +
+  geom_sf(data=md_ev_use, aes(fill=pct_diff)) +
+  geom_text(aes(x = X, y = Y, label = county), data = county_centroids_df, size = 3, check_overlap = TRUE) +
+  theme_minimal() +
+  scale_fill_viridis_b(option="viridis", trans = "log")
+```
+
+```{r}
+#Get MD county population
+md_county_population <- get_acs(geography = "county",
+              variables = c(population = "B01001_001"),
+              year = 2021,
+              state = "MD",
+              geometry = TRUE)
+
+#Clean MD county population data
+md_county_population <- md_county_population |>
+  rename(county = NAME) |>
+  mutate(county = str_to_title(str_remove_all(county,", Maryland"))) |>
+  mutate(county = str_trim(county,side="both")) |>
+  rename(population = estimate) |>
+  select(county, population, geometry) |> 
+  mutate(county = str_to_title(str_remove_all(county, " County"))) |> 
+  mutate(county = str_trim(county,side="both")) 
+  
+```
+```{r}
+#Join the EV data with the MD county population data
+md_ev_county <- md_county_population |> 
+  left_join(ev_2020_2023, join_by(county==county))
+```
+
+```{r}
+#Calculate rate of EV use in March2023 per county population
+md_ev_rate <- md_ev_county |> 
+  group_by(county) |> 
+  mutate(rate = march_2023/population*1000) |>
+  arrange(desc(rate))
+```
+
+```{r}
+#Create the map for using the dataset
+county_centroids <- st_centroid(md_ev_rate)
+county_centroids_df <- as.data.frame(st_coordinates(county_centroids))
+county_centroids_df$county <- county_centroids$county
+
+ggplot() +
+  geom_sf(data=md_ev_rate, aes(fill=rate)) +
+  geom_text(aes(x = X, y = Y, label = county), data = county_centroids_df, size = 3, check_overlap = TRUE) +
+  theme_minimal() +
+  scale_fill_viridis_b(option="viridis", trans = "log")
+```
+
