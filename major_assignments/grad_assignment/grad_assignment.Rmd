@@ -1,12 +1,18 @@
 ---
-title: "Graduate Assignment: Motor Vehicle Theft Analysis"
+title: "Graduate Assignment: Violent Crime and Property Crime in Maryland Municipalities Analysis"
 author: "Daranee Balachandar"
 date: "2023-11-26"
 output: html_notebook
 ---
-#Maryland Property Crime and Motor Vehicle Theft Analysis
+#Violent Crime and Property Crime in Maryland Municipalities Analysis
 
-For this data analyisis project, I will be working with the Violent Crime & Property Crime by Municipality: 2000 to Present Data (https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-Municipality-2000-/2p5g-xrcb) to look into how prevalent MV theft is in Maryland, the demographics and geographic of such thefts and if there is any behavioural change in Maryland citizens due to the crime.
+For this data analysis project, I will be working with the Violent Crime & Property Crime by Municipality: 2000 to Present Data (https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-Municipality-2000-/2p5g-xrcb). My aim is to explore this dataset and find the top three types of crimes in Maryland, which counties are affected by the such crimes and the yearly and demographic trends of these crimes.
+
+According to the Maryland State Open Data Portal web page, <https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-Municipality-2000-/2p5g-xrcb> the Violent Crime & Property Crime by Municipality data is provided by the Maryland Statistical Analysis Center in the Governor's Office of Crime Control and Prevention. The center recieves the data from the Maryland State Police's annual Uniform Crime Reports, a state program started in Maryland in 1975. The FBI assists the development of this program in order to make it compatible with the national version and the program involves uniform classification, compilation, review and analysis of crime statistics by all state law enforcement agencies. 
+
+The Maryland Department of State Police is responsible for the collection and dissemination of the UCR data in accordance to the Public Safety Article, Section 2, Subsection 307 and 308 in the Annotated Code of Maryland. The owner of the violent and property crime dataset is the open data owner and its dissemination on the Open Data Portal is under Maryland's Open Data Program. This dataset was created on February 2, 2016 and was last updated on May 23, 2023.
+
+I chose this dataset is due to two reasons: reports on the rising trend of motor vehicle thefts and carjacking statewide and discussion among College Park city council members and local police departments (District 1 - including College Park and Hyattsville) on public safety. 
 
 ## Data set up
 
@@ -25,14 +31,58 @@ library(ggplot2)
 library(ggrepel)
 ```
 
-Load Data
+## Load Data
 
 ```{r}
-Violent_Crime_Property_Crime_by_Municipality_2000_to_Present <- read_csv("data/Violent_Crime___Property_Crime_by_Municipality__2000_to_Present.csv")
+#Load data 
+violent_property_crime_municipality <- read_csv("data/Violent_Crime___Property_Crime_by_Municipality__2000_to_Present.csv") |> 
+#Clean column names
+clean_names()
+
+#Data summary
+summary(violent_property_crime_municipality)
+```
+## Data exploration and data limitations
+
+What does each row represent?
+What is the chronological and geographic scope of this data?
+If this data contains aggregates (totals), can you find itemized data that those totals are derived from? Do the totals match your own calculations using the itemized data?
+
+There are **4284 rows** and **32 columns** of data, which includes columns of data on the jurisdiction and county in which the crimes took place, the year the crimes took place, the population of the jurisdiction at that year and the types of crime cases such as rape, robbery, larceny theft, motor vehicle theft and more. There are also columns that calculate the grand total of crimes in the jurisdiction in a certain year, percentage change of total crime for the year as compared to the previous year, the violent crime total, the percentage of violent crime, property crime totals, property crime percentage, violent crime percentage change, property crime percentage change, the overall crime rate per 100,000 people, the overall percent change per 100,000 people as well as the rate of different types of crimes per 100,000 people. Each row of the data is based on the yearly crime data in a jurisdiction.
+
+Firstly, the FBI classifies murder, rape, robbery and aggravated assault under violent crime <https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/violent-crime.pdf>. Meanwhile, property crime includes offences such as burglary (breaking and entering, B&E), larceny-theft and motor vehicle theft. This data set does not include data on carjacking cases or arson cases. The reason being that the UCR did not record carjacking cases separately or distinctively until 2022 <https://www.umpd.umd.edu/stats/ucr/legacy_ucr.cfm>. Meanwhile, the FBI clarified that there is only limited data available for arson.
+
+According to the title of the data set, it is meant to consist of data recorded from 2000 to present, which is 2023. However, looking at the date set 
+
+One big limitation about this data set is the geographic scope of this data. This data is recorded based on crimes reported in jurisdictions in counties in Maryland and does not record data according to zip codes. The lack of zip codes may limit the exploration down to the neighborhoods in which the crime had taken place. Interestingly some of the data 
+
+
+
+
+
+```{r}
+#Load ACS5 variables
+acs5 <- load_variables(2021, "acs5", cache = TRUE)
+
+acs5
 ```
 
-Story Ideas
-1. Top 5 hotspots for MV thefts in MD and if there is a common identifier of demographic in these 5 spots. 
-2. Have these MV theft stories decreased the number of car sales of Kias and Hyundais in MD.
-3. Are there any other crimes in MD that should have more attention other than this
+
+
+##Question 1
+What are the top 3 crimes in Maryland based on total crime and what are the top 5 counties that have experienced the top crime in the state and what are chronological and demographic trends of those counties?
+
+
+
+##Question 2
+Which 2 counties has experienced the highest rate per capita of motor vehicle thefts? Based on recent reports, motor vehicle thefts and carjacking 
+
+
+
+##Question 3
+
+
+
+
+
 
