@@ -29,6 +29,7 @@ library(ggthemes)
 library(tidycensus)
 library(ggplot2)
 library(ggrepel)
+library(tigris)
 ```
 
 Load Data
@@ -53,7 +54,7 @@ crime_data_1975_2020 <- crime_data_1975_2020 |>
   rename(county = jurisdiction)
 ```
 
-## Initial data exploration and limitations
+## Checking aggregates and data limitations
 
 What does each row represent?
 What is the chronological and geographic scope of this data?
@@ -113,7 +114,7 @@ crime_data_1975_2020 |>
 
 In order to calculate the per capita data per year, I will be using the population data provided in the dataset.
 ```{r}
-#calculate violent crime per capita per year and county
+#Calculate violent crime per capita per year and county
 crime_data_1975_2020 |> 
   group_by(county,year) |> 
   mutate(
@@ -123,7 +124,7 @@ crime_data_1975_2020 |>
 ```
 
 ```{r}
-#calculate violent crime per capita per year and county
+#Calculate property crime per capita per year and county
 crime_data_1975_2020 |> 
   group_by(county,year) |> 
   mutate(
@@ -132,7 +133,7 @@ crime_data_1975_2020 |>
   select(county, year, population, property_crime_rate_per_100_000_people, property_crime_rate)
 ```
 
-Checking the violent crime rate per 100,000 people in Prince George's County year by year using the ACS 2020 data. 
+Checking the violent crime rate per 100,000 people in each county in 2020 year by year using the ACS 2020 data. 
 
 ```{r}
 #Load ACS5 variables
@@ -150,7 +151,51 @@ md_county_population <- get_acs(geography = "county",
 md_county_population
 ```
 
-## Further data exploration 
+```{r}
+#Filter the crime rate for each county in 2020
+county_crime_rate_2020 <- crime_data_1975_2020 |> 
+  filter(year == 2020)
+```
+
+```{r}
+#Prep MD county population dataset for joining
+md_county_population <- md_county_population |> 
+  rename(county = NAME) |>
+  mutate(county = str_to_title(str_remove_all(county,", Maryland"))) |>
+  mutate(county = str_trim(county,side="both")) |>
+  rename(population = estimate) |>
+  select(county, population, geometry)
+```
+
+```{r}
+#Join MD county population with county crime rate 2020
+md_county_crime_rate <- md_county_population |> 
+  left_join(county_crime_rate_2020, join_by(county))
+```
+
+```{r}
+counties <- counties()
+
+glimpse(counties)
+
+```
+```{r}
+md_counties <- counties |>
+  filter(STATEFP == "24")
+```
+
+
+```{r}
+#Plot a map of the crime rate in 2020
+county_centroids <- st_centroid(md_counties)
+county_centroids_df <- as.data.frame(st_coordinates(county_centroids))
+county_centroids_df$NAME <- county_centroids$NAME
+
+ggplot() +
+  geom_sf(data=md_county_crime_rate, aes(fill=overall_crime_rate_per_100_000_people)) +
+  geom_text(aes(x = X, y = Y, label = NAME), data = county_centroids_df, size = 3, check_overlap = TRUE) +
+  theme_minimal()
+```
 
 I will be exploring the data set further by creating a new data set based on total of every crime in each county.
 ```{r}
@@ -189,28 +234,68 @@ county_total_crimes <- county_total_crimes |>
    mutate(
      total_crimes = total_b_e+total_larceny_theft+total_m_v_theft+total_murder+total_rape+total_robbery+total_agg_assault
    ) 
-
-
 ```
 
-
+Write out the csv of the total crimes from 1975 to 2020 by county.
 ```{r}
+#Write out csv for county_total_crimes
 write.csv(county_total_crimes, "county_total_crimes.csv", row.names = TRUE)
 ```
 
+Using the csv of the county_total_crimes dataset, a map was created using datawrapper to show the counties that had the overall highest crime reports in 35 years.
 
+Here is the link for the map <https://www.datawrapper.de/_/9MwH0/>
 
-I will create a dataset of the total types of crimes for the year join the dataset with the ACS data and create a map of the 
+Next, the total violent crimes in Baltimore City between 2016 and 2020.
+
 ```{r}
-#Calculate total
+baltimore_crime_rate_2016_2020 <- crime_data_1975_2020 |> 
+  filter(year >= 2016 , year <= 2020) |> 
+  filter(str_detect(county, "Baltimore City")) |> 
+  select(county, year, violent_crime_rate_per_100_000_people, property_crime_rate_per_100_000_people, overall_crime_rate_per_100_000_people)
 ```
 
+
+```{r}
+#Create a bar graph for Baltimore City Violent Crime Rate
+baltimore_crime_rate_2016_2020 |> 
+   ggplot() +
+  geom_bar(
+    aes(
+      x = year,
+      weight = violent_crime_rate_per_100_000_people,
+      fill = "skyblue")) +
+  labs(
+    x = "Year",
+    y = "Violent Crime Rate",
+    title = "Baltimore City Violent Crime Rate 2016 to 2020") +
+  theme_minimal () +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+#Create a bar graph for Baltimore City Violent Crime Rate
+baltimore_crime_rate_2016_2020 |> 
+   ggplot() +
+  geom_bar(
+    aes(
+      x = year,
+      weight = property_crime_rate_per_100_000_people,
+      fill = "skyblue")) +
+  labs(
+    x = "Year",
+    y = "Property Crime Rate",
+    title = "Baltimore City Property Crime Rate 2016 to 2020") +
+  theme_minimal () +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
 
 
 
 ```{r}
 #Load ACS5 variables
-acs5 <- load_variables(2010, "acs5", cache = TRUE)
+acs5 <- load_variables(2020, "acs5", cache = TRUE)
 
 acs5
 ```
@@ -223,15 +308,16 @@ acs5
 ```
 
 ##Question 1
-Was there an increase in violent and property crime in the year 2014? Was there a decrease in violent and property crom in the year 2020?
+Was there a statewide surge or decline in violent and property crime in 2014 and 2020? 
 
 
 
 ##Question 2
-Does poverty rate affect violent and property crime?
+Does poverty rate affect violent affect property crime?
 
 
 ##Question 3
+Which year between 2010 to 2020 had the highest rate of Motor Vehicle Thefts and using the MVA Vehicle Sales Counts, do motor vehicle thefts impact the sales of vehicles?
 
 
 
