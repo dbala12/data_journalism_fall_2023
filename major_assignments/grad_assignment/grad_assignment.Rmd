@@ -1,18 +1,18 @@
 ---
-title: "Graduate Assignment: Violent Crime and Property Crime in Maryland Municipalities Analysis"
+title: "Graduate Assignment: Violent Crime and Property Crime in Maryland Counties Analysis"
 author: "Daranee Balachandar"
 date: "2023-11-26"
 output: html_notebook
 ---
 #Violent Crime and Property Crime in Maryland Municipalities Analysis
 
-For this data analysis project, I will be working with the Violent Crime & Property Crime by Municipality: 2000 to Present Data (https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-Municipality-2000-/2p5g-xrcb). My aim is to explore this dataset and find the top three types of crimes in Maryland, which counties are affected by the such crimes and the yearly and demographic trends of these crimes.
+For this data analysis project, I will be working with the Violent Crime & Property Crime by County: 1975 to Present Data (2020) <https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-County-1975-to-Pre/jwfa-fdxs>. 
 
-According to the Maryland State Open Data Portal web page, <https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-Municipality-2000-/2p5g-xrcb> the Violent Crime & Property Crime by Municipality data is provided by the Maryland Statistical Analysis Center in the Governor's Office of Crime Control and Prevention. The center recieves the data from the Maryland State Police's annual Uniform Crime Reports, a state program started in Maryland in 1975. The FBI assists the development of this program in order to make it compatible with the national version and the program involves uniform classification, compilation, review and analysis of crime statistics by all state law enforcement agencies. 
+According to the Maryland State Open Data Portal web page, <https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-County-1975-to-Pre/jwfa-fdxs> the Violent Crime & Property Crime by Municipality data is provided by the Maryland Statistical Analysis Center in the Governor's Office of Crime Control and Prevention. The center receives the data from the Maryland State Police's annual Uniform Crime Reports, a state program started in Maryland in 1975. The FBI assists the development of this program in order to make it compatible with the national version and the program involves uniform classification, compilation, review and analysis of crime statistics by all state law enforcement agencies. 
 
-The Maryland Department of State Police is responsible for the collection and dissemination of the UCR data in accordance to the Public Safety Article, Section 2, Subsection 307 and 308 in the Annotated Code of Maryland. The owner of the violent and property crime dataset is the open data owner and its dissemination on the Open Data Portal is under Maryland's Open Data Program. This dataset was created on February 2, 2016 and was last updated on May 23, 2023.
+The Maryland Department of State Police is responsible for the collection and dissemination of the UCR data in accordance to the Public Safety Article, Section 2, Subsection 307 and 308 in the Annotated Code of Maryland. The owner of the violent and property crime data set is the open data owner and its dissemination on the Open Data Portal is under Maryland's Open Data Program. This data set was created on February 2, 2016 and was last updated on May 23, 2023.
 
-I chose this dataset is due to two reasons: reports on the rising trend of motor vehicle thefts and carjacking statewide and discussion among College Park city council members and local police departments (District 1 - including College Park and Hyattsville) on public safety. 
+As the timeframe for the data set is between 1975 to 2020, I plan to explore the violent and property crime trends based on major events that have happened during from 2000 to 2020. Major events may include environmental and climate changes as well as natural disasters, the initial parts of the COVID-19 pandemic, the Freddie Gray and George Floyd protests in Maryland.
 
 ## Data set up
 
@@ -31,52 +31,204 @@ library(ggplot2)
 library(ggrepel)
 ```
 
-## Load Data
+Load Data
 
 ```{r}
 #Load data 
-violent_property_crime_municipality <- read_csv("data/Violent_Crime___Property_Crime_by_Municipality__2000_to_Present.csv") |> 
-#Clean column names
-clean_names()
+crime_data_1975_2020 <- read_csv("data/Violent_Crime___Property_Crime_by_County__1975_to_Present.csv") 
 
 #Data summary
-summary(violent_property_crime_municipality)
+summary(crime_data_1975_2020)
 ```
-## Data exploration and data limitations
+## Data Cleaning
+
+```{r}
+#Clean column names and change year column to a character column
+crime_data_1975_2020 <- crime_data_1975_2020 |> 
+  clean_names() |> 
+  mutate(year = as.character(year))
+
+#Rename jurisdiction column to county
+crime_data_1975_2020 <- crime_data_1975_2020 |> 
+  rename(county = jurisdiction)
+```
+
+## Initial data exploration and limitations
 
 What does each row represent?
 What is the chronological and geographic scope of this data?
 If this data contains aggregates (totals), can you find itemized data that those totals are derived from? Do the totals match your own calculations using the itemized data?
 
-There are **4284 rows** and **32 columns** of data, which includes columns of data on the jurisdiction and county in which the crimes took place, the year the crimes took place, the population of the jurisdiction at that year and the types of crime cases such as rape, robbery, larceny theft, motor vehicle theft and more. There are also columns that calculate the grand total of crimes in the jurisdiction in a certain year, percentage change of total crime for the year as compared to the previous year, the violent crime total, the percentage of violent crime, property crime totals, property crime percentage, violent crime percentage change, property crime percentage change, the overall crime rate per 100,000 people, the overall percent change per 100,000 people as well as the rate of different types of crimes per 100,000 people. Each row of the data is based on the yearly crime data in a jurisdiction.
+There are **1104 rows** and **38 columns** of data, which includes columns of data on the county in which the crimes took place, the year the crimes took place, the population of the county at that year and the types of crime cases such as rape, robbery, larceny theft, motor vehicle theft and more. There are also columns that calculate the grand total of crimes in the county in a certain year, percentage change of total crime for the year as compared to the previous year, the violent crime total, the percentage of violent crime, property crime totals, property crime percentage, violent crime percentage change, property crime percentage change, the overall crime rate per 100,000 people, the overall percent change per 100,000 people as well as the rate of different types of crimes per 100,000 people. Each row of the data is based on the yearly crime data in each county. 
 
 Firstly, the FBI classifies murder, rape, robbery and aggravated assault under violent crime <https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/violent-crime.pdf>. Meanwhile, property crime includes offences such as burglary (breaking and entering, B&E), larceny-theft and motor vehicle theft. This data set does not include data on carjacking cases or arson cases. The reason being that the UCR did not record carjacking cases separately or distinctively until 2022 <https://www.umpd.umd.edu/stats/ucr/legacy_ucr.cfm>. Meanwhile, the FBI clarified that there is only limited data available for arson.
 
-According to the title of the data set, it is meant to consist of data recorded from 2000 to present, which is 2023. However, looking at the date set 
+According to the title of the data set, it is meant to consist of data recorded from 1975 to present, which is 2020. This is kind of a limitation as the data is not current. However, this data project plans to explore how violent crime and property crime in Maryland is impacted by major national and state incidents. 
 
-One big limitation about this data set is the geographic scope of this data. This data is recorded based on crimes reported in jurisdictions in counties in Maryland and does not record data according to zip codes. The lack of zip codes may limit the exploration down to the neighborhoods in which the crime had taken place. Interestingly some of the data 
+Another limitation about this data set is the geographic scope of this data. This data is recorded based on crimes reported in in counties in Maryland and does not record data according to zip codes. The lack of zip codes may limit the exploration down to counties rather than the neighborhoods in which the crimes had taken place. 
 
+This data set comes with aggregate data columns such as grand total crimes, percent change of crimes from the year before, violent crime total, violent crime percentage, property crime total and property crime percentage. I will be checking this.
+
+```{r}
+#Calculate grand total of crimes
+crime_data_1975_2020 |> 
+  group_by(county, year) |> 
+  summarise(crime_total=murder+rape+robbery+agg_assault+b_e+larceny_theft+m_v_theft)
+```
+
+```{r}
+#Calculate total of violent crimes by year
+crime_data_1975_2020 |> 
+  group_by(county, year) |> 
+  mutate(
+   violent_total = murder+rape+robbery+agg_assault) |> 
+   select(county, year, violent_crime_total, violent_total)
+```
+
+```{r}
+#Calculate total of property crimes by year
+crime_data_1975_2020 |> 
+  group_by(county, year) |> 
+  mutate(
+    property_total = b_e+larceny_theft+m_v_theft) |> 
+    select(county, year, property_crime_totals, property_total)
+```
+```{r}
+#Calculate violent crime percent per county and per year
+crime_data_1975_2020 |> 
+  group_by(county, year) |>
+  mutate(
+    violent_percent = (violent_crime_total/grand_total)*100) |> 
+    select(county, year, violent_crime_percent, violent_percent)
+```
+
+```{r}
+#Calculate property crime percent per county and per year
+crime_data_1975_2020 |> 
+  group_by(county, year) |>
+  mutate(
+    property_percent = (property_crime_totals/grand_total)*100) |> 
+  select(county, year, property_crime_percent, property_percent)
+```
+
+In order to calculate the per capita data per year, I will be using the population data provided in the dataset.
+```{r}
+#calculate violent crime per capita per year and county
+crime_data_1975_2020 |> 
+  group_by(county,year) |> 
+  mutate(
+    violent_crime_rate = (violent_crime_total/population)*100000
+  ) |> 
+  select(county, year, population, violent_crime_rate_per_100_000_people, violent_crime_rate)
+```
+
+```{r}
+#calculate violent crime per capita per year and county
+crime_data_1975_2020 |> 
+  group_by(county,year) |> 
+  mutate(
+    property_crime_rate = (property_crime_totals/population)*100000
+  ) |> 
+  select(county, year, population, property_crime_rate_per_100_000_people, property_crime_rate)
+```
+
+Checking the violent crime rate per 100,000 people in Prince George's County year by year using the ACS 2020 data. 
+
+```{r}
+#Load ACS5 variables
+acs5 <- load_variables(2020, "acs5", cache = TRUE)
+
+acs5
+```
+```{r}
+md_county_population <- get_acs(geography = "county",
+              variables = c(population = "B01001_001"),
+              year = 2020,
+              state = "MD",
+              geometry = TRUE)
+
+md_county_population
+```
+
+## Further data exploration 
+
+I will be exploring the data set further by creating a new data set based on total of every crime in each county.
+```{r}
+#Calculate total of each type of crime for each county from 1975 to 2020
+county_total_crimes <- crime_data_1975_2020 |> 
+  group_by(county) |> 
+  summarise(
+    total_murder = sum(murder),
+    total_rape = sum(rape),
+    total_robbery = sum(robbery),
+    total_agg_assault = sum(agg_assault),
+    total_b_e = sum(b_e),
+    total_larceny_theft = sum(larceny_theft),
+    total_m_v_theft = sum(m_v_theft)
+  )
+```
+
+```{r}
+#Create total of violent crimes
+county_total_crimes <- county_total_crimes |> 
+   group_by(county) |> 
+   mutate(
+     total_violent_crimes = total_murder+total_rape+total_robbery+total_agg_assault
+   ) 
+
+#Create total of property crimes 
+county_total_crimes <- county_total_crimes |> 
+   group_by(county) |> 
+   mutate(
+     total_property_crimes = total_b_e+total_larceny_theft+total_m_v_theft
+   ) 
+
+#Create total crimes 
+county_total_crimes <- county_total_crimes |> 
+   group_by(county) |> 
+   mutate(
+     total_crimes = total_b_e+total_larceny_theft+total_m_v_theft+total_murder+total_rape+total_robbery+total_agg_assault
+   ) 
+
+
+```
+
+
+```{r}
+write.csv(county_total_crimes, "county_total_crimes.csv", row.names = TRUE)
+```
+
+
+
+I will create a dataset of the total types of crimes for the year join the dataset with the ACS data and create a map of the 
+```{r}
+#Calculate total
+```
 
 
 
 
 ```{r}
 #Load ACS5 variables
-acs5 <- load_variables(2021, "acs5", cache = TRUE)
+acs5 <- load_variables(2010, "acs5", cache = TRUE)
 
 acs5
 ```
 
+```{r}
+#Load ACS5 variables
+acs5 <- load_variables(2014, "acs5", cache = TRUE)
 
+acs5
+```
 
 ##Question 1
-What are the top 3 crimes in Maryland based on total crime and what are the top 5 counties that have experienced the top crime in the state and what are chronological and demographic trends of those counties?
+Was there an increase in violent and property crime in the year 2014? Was there a decrease in violent and property crom in the year 2020?
 
 
 
 ##Question 2
-Which 2 counties has experienced the highest rate per capita of motor vehicle thefts? Based on recent reports, motor vehicle thefts and carjacking 
-
+Does poverty rate affect violent and property crime?
 
 
 ##Question 3
