@@ -147,7 +147,7 @@ Let's say we are interested in 2023, so all we need to do now is to store that f
 
 ### Task 5: Save one table from the HTML source
 
-**Task** Run the following code in the gray-colored codeblock below to extract all tables in the HTML and save it as a dataframe. What do you notice about the columns? **Answer**
+**Task** Run the following code in the gray-colored codeblock below to extract all tables in the HTML and save it as a dataframe. What do you notice about the columns? **Answer** Firstly, it is different from Task 4 where there were columns with results, the lists and the list lengths whereas the Task 5 code makes sure the first dataframe is kept as the results and then shows that first dataframe as the results. So now, instead of showing that there are two types of results scraped in Task 4, one result with the press releases and the other the contact list, we have the results of the first dataframe of press releases. So the columns here on this dataframe are dates and press releases. The date column is a character column.
 
 ```{r}
 # Read in all html from table, store all tables on page as nested list of dataframes.
@@ -170,7 +170,7 @@ From here, we can do a little cleaning. First we'll use clean_names() to lower t
 
 ### Task 6: Clean up the data
 
-**Task** Run the following code to extract the table we want, clean up the names and change the date column to an actual date. Look at the dataframe; what other information about these releases might you want to add? **Answer**
+**Task** Run the following code to extract the table we want, clean up the names and change the date column to an actual date. Look at the dataframe; what other information about these releases might you want to add? **Answer** It's not so much information I want to add but it's to clean up the data and make sure there are no spaces in the rows and columns. Probably the next step would be to hyperlink the press release titles. 
 
 ```{r}
 # Read in all html from table, get the HTML table.
@@ -236,7 +236,7 @@ tags. What does the output suggest about how many
 
 <ul>
 
-tags there are in the HTML source? **Answer**
+tags there are in the HTML source? **Answer** There are multiple unordered lists according to the results below. 
 
 ```{r}
 osp_results |> html_elements('li')
@@ -258,7 +258,7 @@ tags. To do that, we add `html_text()` to the end of the last code block:
 
 <li>
 
-tags. Describe the output: **Answer**
+tags. Describe the output: **Answer** html_text() gives the text inside all elements meaning the li. So this shows the actual text in the li elements. Not the li code and the text.
 
 ```{r}
 osp_results |> html_elements('li') |> html_text()
@@ -268,7 +268,7 @@ Ok, so now we can see the press releases. But they are surrounded by a bunch of 
 
 ### Task 11: Turn the contents of the <li> tags into a dataframe 
 
-**Task** Run the following code in the gray-colored codeblock below to make a dataframe. Describe the output: **Answer**
+**Task** Run the following code in the gray-colored codeblock below to make a dataframe. Describe the output: **Answer** We have an actual dataframe due to the tibble function.
 
 ```{r}
 releases <- osp_results |> html_elements('li') |> html_text() |> as_tibble()
@@ -293,7 +293,7 @@ Let's solve both of those using the `separate()` function, which does what you t
 
 ### Task 13: Clean up our elements
 
-**Task** Run the following code in the gray-colored codeblock below to split the `value` column into two columns based on the ":" character and name them:
+**Task** Run the following code in the gray-colored codeblock below to split the `value` column into two columns based on the ":" character and name them: *Note* Separate function takes the date column and the title values into separate columns. The output shows spaces after the date and it needs to be cleaned. The date needs to be changed too.
 
 ```{r}
 releases <- osp_results |> html_elements('li.listing-item') |> html_text() |> as_tibble() |> separate(value, c('date', 'title'), sep=":")
@@ -304,6 +304,7 @@ That worked, but it also exposed a couple of things, as that Warning message ind
 ### Task 14: Clean up our elements more
 
 **Task** Run the following code in the gray-colored codeblock below to get rid of releases without dates and trim the leading spaces. Just for fun, we'll convert the dates into actual dates, too:
+*Note* Dataframe that is clean with no space in both columns.
 
 ```{r}
 releases <- osp_results |> html_elements('li.listing-item') |> html_text() |> as_tibble() |> separate(value, c('date', 'title'), sep=":") |> drop_na(title) |> mutate(title = str_squish(title), date = mdy(date))
