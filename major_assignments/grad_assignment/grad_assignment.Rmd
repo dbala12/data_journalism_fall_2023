@@ -12,7 +12,7 @@ According to the Maryland State Open Data Portal web page, <https://opendata.mar
 
 The Maryland Department of State Police is responsible for the collection and dissemination of the UCR data in accordance to the Public Safety Article, Section 2, Subsection 307 and 308 in the Annotated Code of Maryland. The owner of the violent and property crime data set is the open data owner and its dissemination on the Open Data Portal is under Maryland's Open Data Program. This data set was created on February 2, 2016 and was last updated on May 23, 2023.
 
-As the timeframe for the data set is between 1975 to 2020, I plan to explore the violent and property crime trends based on major events that have happened during from 2000 to 2020. Major events may include environmental and climate changes as well as natural disasters, the initial parts of the COVID-19 pandemic, the Freddie Gray and George Floyd protests in Maryland.
+As the timeframe for the data set is between 1975 to 2020, I plan to explore the violent and property crime trends based on major events that have happened from 2000 to 2020. Major events may include environmental and climate changes as well as natural disasters, the initial parts of the COVID-19 pandemic, the Freddie Gray and George Floyd protests in Maryland.
 
 ## Data set up
 
@@ -54,13 +54,13 @@ crime_data_1975_2020 <- crime_data_1975_2020 |>
   rename(county = jurisdiction)
 ```
 
-## Checking aggregates and data limitations
+## Checking aggregates and data limitations in the data set
 
 What does each row represent?
 What is the chronological and geographic scope of this data?
 If this data contains aggregates (totals), can you find itemized data that those totals are derived from? Do the totals match your own calculations using the itemized data?
 
-There are **1104 rows** and **38 columns** of data, which includes columns of data on the county in which the crimes took place, the year the crimes took place, the population of the county at that year and the types of crime cases such as rape, robbery, larceny theft, motor vehicle theft and more. There are also columns that calculate the grand total of crimes in the county in a certain year, percentage change of total crime for the year as compared to the previous year, the violent crime total, the percentage of violent crime, property crime totals, property crime percentage, violent crime percentage change, property crime percentage change, the overall crime rate per 100,000 people, the overall percent change per 100,000 people as well as the rate of different types of crimes per 100,000 people. Each row of the data is based on the yearly crime data in each county. 
+There are **1104 rows** and **38 columns** of data, which includes columns of data on the county in which the crimes took place, the year, the population of the county at that year and the types of crime cases such as rape, robbery, larceny theft, motor vehicle theft and more. There are also columns that calculate the grand total of crimes in the county in a certain year, percentage change of total crime for the year as compared to the previous year, the violent crime total, the percentage of violent crime, property crime totals, property crime percentage, violent crime percentage change, property crime percentage change, the overall crime rate per 100,000 people, the overall percent change per 100,000 people as well as the rate of different types of crimes per 100,000 people. Each row of the data is based on the yearly crime data in each county. 
 
 Firstly, the FBI classifies murder, rape, robbery and aggravated assault under violent crime <https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/violent-crime.pdf>. Meanwhile, property crime includes offences such as burglary (breaking and entering, B&E), larceny-theft and motor vehicle theft. This data set does not include data on carjacking cases or arson cases. The reason being that the UCR did not record carjacking cases separately or distinctively until 2022 <https://www.umpd.umd.edu/stats/ucr/legacy_ucr.cfm>. Meanwhile, the FBI clarified that there is only limited data available for arson.
 
@@ -133,6 +133,9 @@ crime_data_1975_2020 |>
   select(county, year, population, property_crime_rate_per_100_000_people, property_crime_rate)
 ```
 
+## Data Exploration
+
+For this section, I will exploring the violent and property crime rates iin each county for the year 2020 and 
 Checking the violent crime rate per 100,000 people in each county in 2020 year by year using the ACS 2020 data. 
 
 ```{r}
@@ -177,7 +180,6 @@ md_county_crime_rate <- md_county_population |>
 counties <- counties()
 
 glimpse(counties)
-
 ```
 ```{r}
 md_counties <- counties |>
@@ -196,8 +198,7 @@ ggplot() +
   geom_text(aes(x = X, y = Y, label = NAME), data = county_centroids_df, size = 3, check_overlap = TRUE) +
   theme_minimal()
 ```
-
-I will be exploring the data set further by creating a new data set based on total of every crime in each county.
+I will also be exploring the data set by creating a new data set based on total of every crime in each county.
 ```{r}
 #Calculate total of each type of crime for each county from 1975 to 2020
 county_total_crimes <- crime_data_1975_2020 |> 
@@ -246,7 +247,7 @@ Using the csv of the county_total_crimes dataset, a map was created using datawr
 
 Here is the link for the map <https://www.datawrapper.de/_/9MwH0/>
 
-Next, the total violent crimes in Baltimore City between 2016 and 2020.
+Next, with the knowledge that Baltimore City has the highest overall crime cases, here is a closer look at the total violent crimes in Baltimore City between 2016 and 2020.
 
 ```{r}
 baltimore_crime_rate_2016_2020 <- crime_data_1975_2020 |> 
@@ -272,9 +273,10 @@ baltimore_crime_rate_2016_2020 |>
   theme_minimal () +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+Then, the property crime rate in Baltimore City from 2016 to 2020.
 
 ```{r}
-#Create a bar graph for Baltimore City Violent Crime Rate
+#Create a bar graph for Baltimore City Property Crime Rate
 baltimore_crime_rate_2016_2020 |> 
    ggplot() +
   geom_bar(
@@ -288,39 +290,80 @@ baltimore_crime_rate_2016_2020 |>
     title = "Baltimore City Property Crime Rate 2016 to 2020") +
   theme_minimal () +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 ```
-
-
+The next step is to identify the top three types of crimes (violent and/or property crimes) that are most prevalent statewide in 2018, 2019 and 2020.
 
 ```{r}
-#Load ACS5 variables
+#Calculate the total crimes statewide by year
+statewide_crime_totals <- crime_data_1975_2020 |> 
+  group_by(year) |> 
+  summarize(total_murders = sum(murder), total_rape = sum(rape), total_robbery = sum(robbery),   total_agg_assault = sum(agg_assault), total_b_e = sum(b_e), total_larceny_theft = sum(larceny_theft), total_m_v_theft = sum(m_v_theft)) |> 
+  filter(year >= 2018) |> 
+  pivot_longer(cols=-year, names_to='category', values_to = 'crimes')
+
+#Create a bar graph of total crimes statewide from 2018 to 2020
+statewide_crime_totals |>
+  ggplot() +
+  geom_bar(aes(x=year, weight=crimes, fill=category)) +
+  coord_flip()
+
+```
+```{r}
+#Calculate the total crimes statewide by year
+statewide_crime_totals <- crime_data_1975_2020 |> 
+  group_by(year) |> 
+  summarize(total_murders = sum(murder), total_rape = sum(rape), total_robbery = sum(robbery),   total_agg_assault = sum(agg_assault), total_b_e = sum(b_e), total_larceny_theft = sum(larceny_theft), total_m_v_theft = sum(m_v_theft), total_violent_crimes = sum(violent_crime_total), total_property_crimes = sum(property_crime_totals)) |> 
+  filter(year >= 2018) |> 
+  pivot_longer(cols=-year, names_to='category', values_to = 'crimes')
+
+#Create a bar graph of total crimes statewide from 2018 to 2020
+statewide_crime_totals |>
+  ggplot() +
+  geom_bar(aes(x=year, weight=crimes, fill=category)) +
+  coord_flip()
+```
+
+##Question 1
+Was there a statewide surge or decline in violent and property crime in 2020 as compared to 2019 and 2018? 
+
+```{r}
+#Calculate top three crimes statewide in 2018
+crime_2018_2019_2020 <- statewide_crime_totals |> 
+  filter(year == 2018 | year == 2019 | year == 2020) |> 
+  select(year, total_violent_crimes, total_property_crimes)
+```
+
+```{r}
+#Load ACS5 variables for 2020
 acs5 <- load_variables(2020, "acs5", cache = TRUE)
 
 acs5
 ```
 
-```{r}
-#Load ACS5 variables
-acs5 <- load_variables(2014, "acs5", cache = TRUE)
-
-acs5
-```
-
-##Question 1
-Was there a statewide surge or decline in violent and property crime in 2014 and 2020? 
-
-
 
 ##Question 2
-Does poverty rate affect violent affect property crime?
 
+Motor vehicle thefts have been prevalent in Maryland, based on reports in the last 2 years. Is this trend new in the 2020's or was there any indication of the trend rising from 2018 to 2020?
+
+```{r}
+mv_crime_2017_2020 <- crime_data_1975_2020 |> 
+  filter(year == 2018 | year == 2019 | year == 2020) |> 
+  select(county, year, population, m_v_theft)
+  
+```
 
 ##Question 3
-Which year between 2010 to 2020 had the highest rate of Motor Vehicle Thefts and using the MVA Vehicle Sales Counts, do motor vehicle thefts impact the sales of vehicles?
+In 2023, there were reports that motor vehicle thefts and carjackings were mostly committed by juveniles. With this information, compare motor vehicle thefts between areas with high 18 years and over population and high 18 years and under population in 2018 and 2019.
+
+```{r}
+
+```
 
 
 
+## Memo
+
+Based on the data exploration, 
 
 
 

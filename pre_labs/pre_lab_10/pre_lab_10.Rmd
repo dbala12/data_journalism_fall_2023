@@ -336,7 +336,6 @@ Okay, now let's visualize. We're going to build a choropleth map, with the color
 **Task** Run the following code. Describe the output in the space below. **Answer**
 It is a map of the counties with labels of the county names as well as the rate of foreclosure for each county based on the tones of the blue color. It shows that Charles County has the highest rate of foreclosures. This is slightly different from the previous map built from the number of foreclosures for the zip codes, where zip codes in PG County had the highest number of foreclosures thus making that part of the previous map light blue. Prince George's County on this map is slightly blue too which shows that it may be in the higher side for the rate of foreclosures. There seems to be an X and Y axis on the map. To be honest other than the obvious ligt blue in Charles County, there isn't much to differentiate using the rate of foreclosure scale color in the map. 
 ```{r}
-
 county_centroids <- st_centroid(md_counties)
 county_centroids_df <- as.data.frame(st_coordinates(county_centroids))
 county_centroids_df$NAME <- county_centroids$NAME
