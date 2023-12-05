@@ -253,7 +253,7 @@ Next, with the knowledge that Baltimore City has the highest overall crime cases
 baltimore_crime_rate_2016_2020 <- crime_data_1975_2020 |> 
   filter(year >= 2016 , year <= 2020) |> 
   filter(str_detect(county, "Baltimore City")) |> 
-  select(county, year, violent_crime_rate_per_100_000_people, property_crime_rate_per_100_000_people, overall_crime_rate_per_100_000_people)
+  select(county, year, violent_crime_rate_per_100_000_people, property_crime_rate_per_100_000_people,   overall_crime_rate_per_100_000_people)
 ```
 
 
@@ -328,9 +328,10 @@ Was there a statewide surge or decline in violent and property crime in 2020 as 
 
 ```{r}
 #Calculate top three crimes statewide in 2018
-crime_2018_2019_2020 <- statewide_crime_totals |> 
-  filter(year == 2018 | year == 2019 | year == 2020) |> 
-  select(year, total_violent_crimes, total_property_crimes)
+crime_2018_2019_2020 <- crime_data_1975_2020|> 
+  group_by(year) |> 
+  summarize(total_violent_crimes = sum(violent_crime_totals), total_property_crimes =     sum(property_crime_totals)) |> 
+  filter(year >= 2018) 
 ```
 
 ```{r}
