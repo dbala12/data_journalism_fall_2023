@@ -8,7 +8,7 @@ output: html_notebook
 
 For this data analysis project, I will be working with the Violent Crime & Property Crime by County: 1975 to Present Data (2020) <https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-County-1975-to-Pre/jwfa-fdxs>. 
 
-According to the Maryland State Open Data Portal web page, <https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-County-1975-to-Pre/jwfa-fdxs> the Violent Crime & Property Crime by Municipality data is provided by the Maryland Statistical Analysis Center in the Governor's Office of Crime Control and Prevention. The center receives the data from the Maryland State Police's annual Uniform Crime Reports, a state program started in Maryland in 1975. The FBI assists the development of this program in order to make it compatible with the national version and the program involves uniform classification, compilation, review and analysis of crime statistics by all state law enforcement agencies. 
+According to the Maryland State Open Data Portal web page, <https://opendata.maryland.gov/Public-Safety/Violent-Crime-Property-Crime-by-County-1975-to-Pre/jwfa-fdxs> the Violent Crime & Property Crime by County data is provided by the Maryland Statistical Analysis Center in the Governor's Office of Crime Control and Prevention. The center receives the data from the Maryland State Police's annual Uniform Crime Reports, a state program started in Maryland in 1975. The FBI assists the development of this program in order to make it compatible with the national version and the program involves uniform classification, compilation, review and analysis of crime statistics by all state law enforcement agencies. 
 
 The Maryland Department of State Police is responsible for the collection and dissemination of the UCR data in accordance to the Public Safety Article, Section 2, Subsection 307 and 308 in the Annotated Code of Maryland. The owner of the violent and property crime data set is the open data owner and its dissemination on the Open Data Portal is under Maryland's Open Data Program. This data set was created on February 2, 2016 and was last updated on May 23, 2023.
 
@@ -30,10 +30,10 @@ library(tidycensus)
 library(ggplot2)
 library(ggrepel)
 library(tigris)
+library(sf)
 ```
 
 Load Data
-
 ```{r}
 #Load data 
 crime_data_1975_2020 <- read_csv("data/Violent_Crime___Property_Crime_by_County__1975_to_Present.csv") 
@@ -113,6 +113,10 @@ crime_data_1975_2020 |>
 ```
 
 In order to calculate the per capita data per year, I will be using the population data provided in the dataset.
+
+A note here about the population, the population data for each county in the data set is slightly different is slightly different from what is pulled from ACS for that year. it is some counties have around 1,000 population difference give or take in each county for each year.
+
+With that in mind I will be using the population data in the dataset to check the crime rate.
 ```{r}
 #Calculate violent crime per capita per year and county
 crime_data_1975_2020 |> 
@@ -135,8 +139,8 @@ crime_data_1975_2020 |>
 
 ## Data Exploration
 
-For this section, I will exploring the violent and property crime rates iin each county for the year 2020 and 
-Checking the violent crime rate per 100,000 people in each county in 2020 year by year using the ACS 2020 data. 
+**Task 1**
+For this section, I will be exploring the violent and property crime rates in each county for the year 2020 using the ACS 2020 data.
 
 ```{r}
 #Load ACS5 variables
@@ -181,6 +185,7 @@ counties <- counties()
 
 glimpse(counties)
 ```
+
 ```{r}
 md_counties <- counties |>
   filter(STATEFP == "24")
@@ -198,7 +203,10 @@ ggplot() +
   geom_text(aes(x = X, y = Y, label = NAME), data = county_centroids_df, size = 3, check_overlap = TRUE) +
   theme_minimal()
 ```
-I will also be exploring the data set by creating a new data set based on total of every crime in each county.
+**Task note** By calculating the overall crime rates per 100,000 people in each county for 2020, it shows that the last year with recorded data for this data set showed that Baltimore City has the highest overall crime rate for 2020. The other counties with high crimes rate per 100,000 people is Dorchester County and Worcester County.
+
+**Task 2** Now, I'd like to see the counties with the highest total crime from 1975 to 2020.
+
 ```{r}
 #Calculate total of each type of crime for each county from 1975 to 2020
 county_total_crimes <- crime_data_1975_2020 |> 
@@ -243,13 +251,18 @@ Write out the csv of the total crimes from 1975 to 2020 by county.
 write.csv(county_total_crimes, "county_total_crimes.csv", row.names = TRUE)
 ```
 
-Using the csv of the county_total_crimes dataset, a map was created using datawrapper to show the counties that had the overall highest crime reports in 35 years.
+**Task notes**
+Using the csv of the county_total_crimes dataset, a map was created using Datawrapper to show the counties that had the overall highest crime reports in 35 years. 
 
-Here is the link for the map <https://www.datawrapper.de/_/9MwH0/>
+Here is the link for the map: <https://www.datawrapper.de/_/9MwH0/>
 
-Next, with the knowledge that Baltimore City has the highest overall crime cases, here is a closer look at the total violent crimes in Baltimore City between 2016 and 2020.
+Based on that map from Datawrapper, it shows that Baltimore City and Prince George's County have the highest overall total crime from 1975 to 2020. 
+
+**Task 3**
+With the knowledge that Baltimore City has the highest overall crime cases in 35 years and then the highest crime rate in 2020, here is a closer look at the types of crimes in Baltimore City between 2016 and 2020.
 
 ```{r}
+#Create a dataset for Baltimore Crime from 2016 to 2020
 baltimore_crime_rate_2016_2020 <- crime_data_1975_2020 |> 
   filter(year >= 2016 , year <= 2020) |> 
   filter(str_detect(county, "Baltimore City")) |> 
@@ -264,8 +277,7 @@ baltimore_crime_rate_2016_2020 |>
   geom_bar(
     aes(
       x = year,
-      weight = violent_crime_rate_per_100_000_people,
-      fill = "skyblue")) +
+      weight = violent_crime_rate_per_100_000_people)) +
   labs(
     x = "Year",
     y = "Violent Crime Rate",
@@ -282,8 +294,7 @@ baltimore_crime_rate_2016_2020 |>
   geom_bar(
     aes(
       x = year,
-      weight = property_crime_rate_per_100_000_people,
-      fill = "skyblue")) +
+      weight = property_crime_rate_per_100_000_people)) +
   labs(
     x = "Year",
     y = "Property Crime Rate",
@@ -291,6 +302,10 @@ baltimore_crime_rate_2016_2020 |>
   theme_minimal () +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+**Task notes** These bar graphs show that property and violent crime rates have decreased in 2020. I decided to leave the bar graphs in chronological order.
+
+
+**Task 4**
 The next step is to identify the top three types of crimes (violent and/or property crimes) that are most prevalent statewide in 2018, 2019 and 2020.
 
 ```{r}
@@ -306,22 +321,12 @@ statewide_crime_totals |>
   ggplot() +
   geom_bar(aes(x=year, weight=crimes, fill=category)) +
   coord_flip()
-
 ```
-```{r}
-#Calculate the total crimes statewide by year
-statewide_crime_totals <- crime_data_1975_2020 |> 
-  group_by(year) |> 
-  summarize(total_murders = sum(murder), total_rape = sum(rape), total_robbery = sum(robbery),   total_agg_assault = sum(agg_assault), total_b_e = sum(b_e), total_larceny_theft = sum(larceny_theft), total_m_v_theft = sum(m_v_theft), total_violent_crimes = sum(violent_crime_total), total_property_crimes = sum(property_crime_totals)) |> 
-  filter(year >= 2018) |> 
-  pivot_longer(cols=-year, names_to='category', values_to = 'crimes')
+**Task note** This bar graph shows a breakdown of all types of violent and property crimes and their trends from 2018 to 2020 in Maryland. From this bar graph, we notice that the crime with the highest totals in those years is larceny theft, followed by breaking and entering, aggravated assault and motor vehicle theft. 
 
-#Create a bar graph of total crimes statewide from 2018 to 2020
-statewide_crime_totals |>
-  ggplot() +
-  geom_bar(aes(x=year, weight=crimes, fill=category)) +
-  coord_flip()
-```
+Next this chart shows that total crime had decreased from 2018 to 2019 to 2020, with total crimes in 2020 being the lowest. It shows that robbery, larceny theft, and motor vehicle thefts and breaking and entering are crimes that decreased from 2018 to 2020, which are largely property crime.
+
+**Note** This bar graph was created with the help of Derek and ChatGPT. I was unsure how to create a graph using three variables instead of two.
 
 ##Question 1
 Was there a statewide surge or decline in violent and property crime in 2020 as compared to 2019 and 2018? 
@@ -330,41 +335,191 @@ Was there a statewide surge or decline in violent and property crime in 2020 as 
 #Calculate top three crimes statewide in 2018
 crime_2018_2019_2020 <- crime_data_1975_2020|> 
   group_by(year) |> 
-  summarize(total_violent_crimes = sum(violent_crime_totals), total_property_crimes =     sum(property_crime_totals)) |> 
-  filter(year >= 2018) 
+  summarize(total_violent_crimes = sum(violent_crime_total), total_property_crimes =     sum(property_crime_totals)) |> 
+  filter(year >= 2018) |> 
+  pivot_longer(cols=-year, names_to='category', values_to = 'crimes') 
+
+#Create a bar graph 
+crime_2018_2019_2020|>
+  ggplot() +
+  geom_bar(aes(x=year, weight=crimes, fill=category))
+```
+**Answer** Based on this bar graph, we see that property crimes did drop by around 25,000 cases in 2020 compared to 2018. It also shows that property crimes have been decreasing from 2018 to 2019 and then 2020. So it may show that the first year of the COVID-19 pandemic did make a difference in property crimes but a small one. It would be interesting to compare this trend with the 2021 to 2023 data. 
+
+One point in this bar chart shows that there isn't much difference or decline in 2020 total violent crimes statewide as compared to 2018 and 2019. 
+
+##Question 2
+By looking at how violent crime does not change, what is the trend in rape statewide from 1975 to 2020. Rape is an underreported crime.
+
+```{r}
+rape_data_1975_2020 <- crime_data_1975_2020 |> 
+  group_by(year) |> 
+  summarize(total_rape = sum(rape)) |> 
+  pivot_longer(cols=-year, names_to='category', values_to = 'crimes') |> 
+  select(year, crimes) 
+  
+rape_data_1975_2020 |> 
+  ggplot() +
+  geom_bar(
+    aes(
+      x = year,
+      weight = crimes)) +
+  labs(
+    x = "Year",
+    y = "Rape Cases",
+    title = "Rape Case Trends in Maryland from 1975 to 2020") +
+  theme_minimal () +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+##Question 3
+Motor vehicle thefts have been prevalent in Maryland, based on reports in the last 5 years. Is this trend new in the 2020s or was there any indication of the trend rising from 2016 to 2020?
+
+```{r}
+#Create a dataframe of MV crime from 2016 to 2020
+mv_crime_2016_2020 <- crime_data_1975_2020 |> 
+  group_by(year) |> 
+  summarize(total_m_v_crimes = sum(m_v_theft), total_m_v_crime_per_capita = sum(m_v_theft_per_100_000_people)) |> 
+  filter(year >= 2016)
+
+#Plot a line graph 
+mv_crime_2016_2020 |> 
+  select(year, total_m_v_crime_per_capita) |> 
+ggplot() +
+  geom_bar(aes(x=year, weight=total_m_v_crime_per_capita)) +
+  theme_minimal() +
+  labs(
+    title="MV crime decrease from 2016 to 2020",
+    x = "year",
+    y = "mv crime per capita"
+  )
+```
+**Answer** This bar graph shows that motor vehicle crime per capita has decreased from 2016 to 2020. In order to follow up with this, it would be good to compare this with the motor vehicle crime per capita from 2021 to 2023. If there is a large surge between 2021 to 2023, it would be interesting to find out the reason for the surge. 
+
+##Question 4
+In 2023, there were reports that motor vehicle thefts and carjackings were mostly committed by juveniles. With age being a factor, what is the median age for each Maryland county and is there a relationship between the median age of counties and the total motor vehicle crime in the counties. 
+
+**Note** I used the year 2019 because it is the year before the pandemic hit.
+Based on the dataset, 
+```{r}
+#Create mv crime data for 2019
+m_v_crime_2019 <- crime_data_1975_2020 |> 
+  group_by(county) |> 
+  filter(year == 2019) |> 
+  summarize(total_m_v_crimes = sum(m_v_theft), total_m_v_crime_per_capita = sum(m_v_theft_per_100_000_people)) 
 ```
 
 ```{r}
-#Load ACS5 variables for 2020
-acs5 <- load_variables(2020, "acs5", cache = TRUE)
+#Load ACS5 variables
+acs5 <- load_variables(2019, "acs5", cache = TRUE)
 
 acs5
 ```
 
-
-##Question 2
-
-Motor vehicle thefts have been prevalent in Maryland, based on reports in the last 2 years. Is this trend new in the 2020's or was there any indication of the trend rising from 2018 to 2020?
+```{r}
+#Get the median age per county using ACS
+med_age <- get_acs(geography = "county",
+              variables = c(medianage = "B01002_001"),
+              state = "MD",
+              year = 2019) |> 
+arrange(estimate)
+```
 
 ```{r}
-mv_crime_2017_2020 <- crime_data_1975_2020 |> 
-  filter(year == 2018 | year == 2019 | year == 2020) |> 
-  select(county, year, population, m_v_theft)
+#Clean median age data
+med_age <- med_age |> 
+  clean_names() |> 
+  select(name, estimate) |> 
+  rename(county = name) |> 
+   mutate(county = str_to_title(str_remove_all(county,", Maryland"))) |>
+  mutate(county = str_trim(county,side="both")) |>
+  rename(age = estimate) 
   
-```
+#Join median age data with MV crime 2019
+m_v_theft_median_age <- med_age |> 
+  left_join(m_v_crime_2019, join_by(county==county)) 
 
-##Question 3
-In 2023, there were reports that motor vehicle thefts and carjackings were mostly committed by juveniles. With this information, compare motor vehicle thefts between areas with high 18 years and over population and high 18 years and under population in 2018 and 2019.
+m_v_theft_median_age |> 
+  arrange(desc(age))
+
+```
+##Question 5
+
+Find the average income for counties with violent crime more than 15%.
 
 ```{r}
+#Create dataframe with violent crime in 2019
+violent_crime_2019 <- crime_data_1975_2020 |> 
+  filter(year == 2019) |> 
+  select(county, population, violent_crime_percent) |> 
+  filter(violent_crime_percent >= 15)
+
+# Get median income from ACS
+med_income <- get_acs(geography="county", variables = c(medianincome = "B07411_001"), state='MD', year=2019)
+```
+```{r}
+#Clean median income data
+med_income <- med_income |> 
+  clean_names() |> 
+  select(name, estimate) |> 
+  rename(county = name)  |> 
+  mutate(county = str_to_title(str_remove_all(county,", Maryland"))) |>
+  mutate(county = str_trim(county,side="both"))
+
+#Join median income data with filtered violent crime data 2019
+violent_crime_med_income <- med_income |> 
+  inner_join(violent_crime_2019, join_by (county==county))
+
+#Select the columns in dataset
+violent_crime_med_income |> 
+  select(county, estimate, violent_crime_percent) |> 
+  arrange(desc(estimate))
 
 ```
+**Note**
 
+##Question 6
+Does mv theft increase affect car sales in counties?
+```{r}
+mv_crime_2016_2020 <- mv_crime_2016_2020 
+```
+
+```{r}
+#Load MVA vehicle sales data
+vehicle_sales_2002_to_2023 <- read_csv("data/MVA_Vehicle_Sales_Counts_by_Month_for_Calendar_Year_2002_through_August_2023.csv")
+```
+```{r}
+#Filter and clean vehicle sales data
+vehicle_sales_2016_2020 <- vehicle_sales_2002_to_2023 |> 
+  clean_names() |> 
+  group_by(year) |>
+  summarize(new_sales = sum(total_sales_new), used_sales = sum(total_sales_used)) |> 
+  filter (year >= 2016) |> 
+  mutate(total_sales = new_sales + used_sales) |> 
+  mutate(year = as.character(year))
+
+#Join dataset
+mv_theft_vehicle_sales <- vehicle_sales_2016_2020 |> 
+  inner_join(mv_crime_2016_2020, join_by (year==year))
+
+#Select columns
+mv_theft_vehicle_sales <- mv_theft_vehicle_sales |> 
+  select(year, total_sales, total_m_v_crimes) 
+```
+
+```{r}
+#Write out csv for mv_theft_vehicle_sales
+write.csv(mv_theft_vehicle_sales, "mv_theft_vehicle_sales.csv", row.names = TRUE)
+```
+
+**Answer** Here is a Datawrapper bar chart showing the trend of MV theft crimes and vehicle sales from 2016 to 2020. <https://www.datawrapper.de/_/lGUHF/>
 
 
 ## Memo
 
-Based on the data exploration, 
+Based on the data exploration, the three things that stood out to me are these
 
 
 
