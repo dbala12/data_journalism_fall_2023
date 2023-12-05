@@ -12,7 +12,7 @@ According to the Maryland State Open Data Portal web page, <https://opendata.mar
 
 The Maryland Department of State Police is responsible for the collection and dissemination of the UCR data in accordance to the Public Safety Article, Section 2, Subsection 307 and 308 in the Annotated Code of Maryland. The owner of the violent and property crime data set is the open data owner and its dissemination on the Open Data Portal is under Maryland's Open Data Program. This data set was created on February 2, 2016 and was last updated on May 23, 2023.
 
-As the timeframe for the data set is between 1975 to 2020, I plan to explore the violent and property crime trends based on major events that have happened from 2000 to 2020. Major events may include environmental and climate changes as well as natural disasters, the initial parts of the COVID-19 pandemic, the Freddie Gray and George Floyd protests in Maryland.
+As the time frame for the data set is between 1975 to 2020, I plan to explore the violent and property crime trends based on major events that have happened from 2010 to 2020. I'd also like to see if some crime trends reported in 2023 had started from 2016 to 2020. 
 
 ## Data set up
 
@@ -55,10 +55,6 @@ crime_data_1975_2020 <- crime_data_1975_2020 |>
 ```
 
 ## Checking aggregates and data limitations in the data set
-
-What does each row represent?
-What is the chronological and geographic scope of this data?
-If this data contains aggregates (totals), can you find itemized data that those totals are derived from? Do the totals match your own calculations using the itemized data?
 
 There are **1104 rows** and **38 columns** of data, which includes columns of data on the county in which the crimes took place, the year, the population of the county at that year and the types of crime cases such as rape, robbery, larceny theft, motor vehicle theft and more. There are also columns that calculate the grand total of crimes in the county in a certain year, percentage change of total crime for the year as compared to the previous year, the violent crime total, the percentage of violent crime, property crime totals, property crime percentage, violent crime percentage change, property crime percentage change, the overall crime rate per 100,000 people, the overall percent change per 100,000 people as well as the rate of different types of crimes per 100,000 people. Each row of the data is based on the yearly crime data in each county. 
 
@@ -114,9 +110,9 @@ crime_data_1975_2020 |>
 
 In order to calculate the per capita data per year, I will be using the population data provided in the dataset.
 
-A note here about the population, the population data for each county in the data set is slightly different is slightly different from what is pulled from ACS for that year. it is some counties have around 1,000 population difference give or take in each county for each year.
+Something to note here is that the population data for each county in the data set is slightly different from what is pulled from ACS for that year. Some counties have population that is around 1,000 more or less in the dataset compared to what is found in the ACS for each county for each year.
 
-With that in mind I will be using the population data in the dataset to check the crime rate.
+With that in mind I will be using the population data in the data set to check the crime rate.
 ```{r}
 #Calculate violent crime per capita per year and county
 crime_data_1975_2020 |> 
@@ -140,7 +136,7 @@ crime_data_1975_2020 |>
 ## Data Exploration
 
 **Task 1**
-For this section, I will be exploring the violent and property crime rates in each county for the year 2020 using the ACS 2020 data.
+For this section, I will be exploring the overall crime rate in each county for the year 2020 using the ACS 2020 data. 2020 was the year the COVID-19 pandemic started and most of the state would have had to shut down in some parts of the year. It was also the year when the Black Lives Matter and George Floyd protests took place. With these two significant national and global events in mind, it would be interesting to see how it related to the overall crime in each county in Maryland that year. 
 
 ```{r}
 #Load ACS5 variables
@@ -203,9 +199,9 @@ ggplot() +
   geom_text(aes(x = X, y = Y, label = NAME), data = county_centroids_df, size = 3, check_overlap = TRUE) +
   theme_minimal()
 ```
-**Task note** By calculating the overall crime rates per 100,000 people in each county for 2020, it shows that the last year with recorded data for this data set showed that Baltimore City has the highest overall crime rate for 2020. The other counties with high crimes rate per 100,000 people is Dorchester County and Worcester County.
+**Task note** By calculating the overall crime rates per 100,000 people in each county for 2020, it shows that the last year with recorded data for this data set showed that Baltimore City has the highest overall crime rate for 2020. The other counties with high crimes rate per 100,000 people is Dorchester County and Worcester County. Baltimore City population is predominantly African American at 61.6%, according to the US Census for the city, whereas Dorchester County and Worcester County are predominantly white 66.4% and 83.3% respectively. It is expected that Baltimore City would have a high crime rate, even during the pandemic and also keeping in mind the Black Lives Matter and George Floyd protests. However, the crime rates for Dorchester County and Worcester County in 2020 is interesting as they are also located in more rural areas. 
 
-**Task 2** Now, I'd like to see the counties with the highest total crime from 1975 to 2020.
+**Task 2** Now, with that in mind, I'd like to place the above information in context and see the counties with the highest total crime from 1975 to 2020.
 
 ```{r}
 #Calculate total of each type of crime for each county from 1975 to 2020
@@ -256,10 +252,10 @@ Using the csv of the county_total_crimes dataset, a map was created using Datawr
 
 Here is the link for the map: <https://www.datawrapper.de/_/9MwH0/>
 
-Based on that map from Datawrapper, it shows that Baltimore City and Prince George's County have the highest overall total crime from 1975 to 2020. 
+Based on that map from Datawrapper, it shows that Baltimore City and Prince George's County have the highest overall total crime from 1975 to 2020. With what was found in Task 1 for high quite high crime rates in Dorchester and Worcester County, it would be interesting to see if this had been a one off for the year 2020.
 
 **Task 3**
-With the knowledge that Baltimore City has the highest overall crime cases in 35 years and then the highest crime rate in 2020, here is a closer look at the types of crimes in Baltimore City between 2016 and 2020.
+With the knowledge that Baltimore City has the highest overall crime cases in 35 years and then the highest crime rate in 2020, here is a look at the violent crime and property crime trends in Baltimore City from 2016 and 2020.
 
 ```{r}
 #Create a dataset for Baltimore Crime from 2016 to 2020
@@ -302,8 +298,7 @@ baltimore_crime_rate_2016_2020 |>
   theme_minimal () +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-**Task notes** These bar graphs show that property and violent crime rates have decreased in 2020. I decided to leave the bar graphs in chronological order.
-
+**Task notes** These bar graphs show that property and violent crime rates have decreased in 2020. Chronologically, we can see that property crime rates were dropping from 2017 to 2019 and made a bigger drop in 2020 due to the pandemic. Although there was a drop in violent crime rate in 2020, it wasn't a huge drop and it seemed like violent crime rates from 2016 to 2019 were around 1,800 cases per 100,000 people, with 2017 peaking at around 2,000 cases per 100,000 people. 
 
 **Task 4**
 The next step is to identify the top three types of crimes (violent and/or property crimes) that are most prevalent statewide in 2018, 2019 and 2020.
@@ -324,9 +319,9 @@ statewide_crime_totals |>
 ```
 **Task note** This bar graph shows a breakdown of all types of violent and property crimes and their trends from 2018 to 2020 in Maryland. From this bar graph, we notice that the crime with the highest totals in those years is larceny theft, followed by breaking and entering, aggravated assault and motor vehicle theft. 
 
-Next this chart shows that total crime had decreased from 2018 to 2019 to 2020, with total crimes in 2020 being the lowest. It shows that robbery, larceny theft, and motor vehicle thefts and breaking and entering are crimes that decreased from 2018 to 2020, which are largely property crime.
+Based on this graph, the total crime had decreased from 2018 to 2019 to 2020, with total crimes in 2020 being the lowest. It shows that robbery, larceny theft, and motor vehicle thefts and breaking and entering are crimes that decreased from 2018 to 2020, which are largely property crime.
 
-**Note** This bar graph was created with the help of Derek and ChatGPT. I was unsure how to create a graph using three variables instead of two.
+Note: This bar graph was created with the help of Derek and ChatGPT. I was unsure how to create a graph using three variables instead of two.
 
 ##Question 1
 Was there a statewide surge or decline in violent and property crime in 2020 as compared to 2019 and 2018? 
@@ -344,12 +339,12 @@ crime_2018_2019_2020|>
   ggplot() +
   geom_bar(aes(x=year, weight=crimes, fill=category))
 ```
-**Answer** Based on this bar graph, we see that property crimes did drop by around 25,000 cases in 2020 compared to 2018. It also shows that property crimes have been decreasing from 2018 to 2019 and then 2020. So it may show that the first year of the COVID-19 pandemic did make a difference in property crimes but a small one. It would be interesting to compare this trend with the 2021 to 2023 data. 
+**Answer** Based on this bar graph, we see that property crimes did drop by around 25,000 cases in 2020 compared to 2018. It also shows that property crimes have been decreasing from 2018 to 2019 and then 2020. So it may show that the first year of the COVID-19 pandemic did make a difference in property crimes but a small one. It would be interesting to compare this trend with the 2021 to 2023 data as that is the time period in which the country and states were trying to recover economically and socially after COVID-19 became an endemic. 
 
-One point in this bar chart shows that there isn't much difference or decline in 2020 total violent crimes statewide as compared to 2018 and 2019. 
+One point in this bar chart shows that there isn't much difference or decline in 2020 total violent crimes statewide as compared to 2018 and 2019. Based on the previous bar chart in task 4 that shows a breakdown of violent crimes data that did not seem to change much from 2018 to 2020. The bar chart in task 4 showed that total robberies did go down slightly in 2020 but aggravated assault, murder and rape seemed to be similar to past years. Since people were mainly indoors in 2020, not seeing a spike in these crimes and this may tie with domestic violence crimes may be a good thing.
 
 ##Question 2
-By looking at how violent crime does not change, what is the trend in rape statewide from 1975 to 2020. Rape is an underreported crime.
+By looking at how violent crime does not change, what is the trend in rape statewide from 1975 to 2020? Is this one crime that has not seen much change overall in the last 45 years? 
 
 ```{r}
 rape_data_1975_2020 <- crime_data_1975_2020 |> 
@@ -372,7 +367,7 @@ rape_data_1975_2020 |>
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
-
+**Answer** This graph shows that a reported rape cases had increased between 1975 to 1995. However, a gradual decrease in rape cases is seen from 1995 to 2014 and then an uptick in 2015 and then another slightly smaller surge between 2017 and 2018. 2018 was the year of the Me Too movement and the surge in rape cases reported may be attributed to that. It would be interesting to look more into the surge between 2014 to 2015. 
 
 ##Question 3
 Motor vehicle thefts have been prevalent in Maryland, based on reports in the last 5 years. Is this trend new in the 2020s or was there any indication of the trend rising from 2016 to 2020?
@@ -445,8 +440,10 @@ m_v_theft_median_age |>
   arrange(desc(age))
 
 ```
-##Question 5
+**Answer** According to the data above, it does not seem like age is a factor in counties that have experienced a high mv theft rate. Instead we may attribute the high mv theft rate to them happening in urban areas such as Prince George's County and Baltimore City. I would say that it is interesting that Montgomery county had a low mv crime rate per capita in 2019 since it is a highly populated county.
 
+##Question 5
+What is the relationship between median income and violent crime?
 Find the average income for counties with violent crime more than 15%.
 
 ```{r}
@@ -478,7 +475,6 @@ violent_crime_med_income |>
   arrange(desc(estimate))
 
 ```
-**Note**
 
 ##Question 6
 Does mv theft increase affect car sales in counties?
@@ -516,10 +512,17 @@ write.csv(mv_theft_vehicle_sales, "mv_theft_vehicle_sales.csv", row.names = TRUE
 
 **Answer** Here is a Datawrapper bar chart showing the trend of MV theft crimes and vehicle sales from 2016 to 2020. <https://www.datawrapper.de/_/lGUHF/>
 
+Based on the chart, it seems that car sales rose from 2016 to 2020 while motor vehicle thefts declined. This is interesting to see if the decline in mv thefts made people feel safer in buying cars.
 
 ## Memo
 
-Based on the data exploration, the three things that stood out to me are these
+The first pitch is to look into the violent crime data in 2020 which includes rape, aggravated assault, murder and robbery which did not change much (except for robbery) as compared to previous years. This trend of no change is both reassuring that there was no icrease in such violent crimes in a difficult year plagued by the pandemic and protests. However, this dataset does not have any data on domestic violence. In order to look further into this, I plan to find data on domestic violence cases in from 2017 to 2021 as it would be a large set to track the trends in domestic violence and then to compare it with this dataset. I would like to also interview police officers in counties with the highest cases of violent crimes historically and see if this data matches up.
+
+Next, I would like to look into the rape trend in Maryland from 1975 to 2020 and try to map out different events, or passing of legislations that may have affected such surge in 1975 to 1995, a decline from 1995 to 2014 and then to look further into what had happened in 2014 that led to a surge in 2015. I would also like to look closely into the data and see the demographics of the counties that had recorded the highest rate of rape. Reading this ProPublica article (sorry it's a patch website)<https://patch.com/maryland/baltimore/early-dna-evidence-decades-old-rape-cases-are-both-promising-alarming>, I see that this is still a relevant topic with serial rapists still around and cases that were not reported previously still being reported. 
+
+Finally, I would like to take a look into the relationship between the decrease in motor vehicle crime statewide from 2016 to 2020 and see if that had affected the rise in car sales those years. For this story, I plan to get further data on motor vehicle theft and carjacking cases from 2021 to 2023 and compare that to the 2016 to 2020 dataset. The vehicle sales data only had the sales of used and new cars without a breakdown of the type of cars. During a public safety meeting at College Park with the PG County Police Department, the major had mentioned that Hyundais and Kias were the car types that would be either stolen or carjacked. Looking at this it would be good to get data on a further breakdown on the type of vehicles that were stolen and then to compare that to the new or used car sales for a certain county.
+
+Overall, it is quite difficult to pinpoint a current news story using crime data especially according to county from 1975 to 2020. However, these trends listed above and explored in this project on violent crime cases in 2020 and rape case trends in 45 years are stories that are still relevant today. I hope to look into these stories further with more data exploration and interviewing sources on this.
 
 
 
