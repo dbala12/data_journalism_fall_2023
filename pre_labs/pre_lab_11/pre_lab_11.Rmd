@@ -40,7 +40,7 @@ Let's read in this data and examine it:
 
 ### Task 2: Read in data
 
-**Task** Run the following code and describe the data frame it outputs. **Answer** The dataframe is 4 columns and 999 rows of information. the 4 columns are broken down to the date and title of the press releases followed by the URL for the press releases. The 4th column titled 'text' is basically the text written in the press releases.
+**Task** Run the following code and describe the data frame it outputs. **Answer** The dataframe has 4 columns and 999 rows of information. The 4 columns are broken down to the date and title of the press releases followed by the URL for the press releases. The 4th column titled 'text' is basically the text written in the press releases.
 
 ```{r}
 releases <- read_rds("data/cardin_releases.rds")
@@ -89,7 +89,7 @@ If you are trying to create a list of unique words, R will treat differences in 
 
 ### Task 5: Trying out unique
 
-**Task** Run the following code and describe what the `unique` function does to the original list of words. **Answer** It is case sensitive.
+**Task** Run the following code and describe what the `unique` function does to the original list of words. **Answer** The unique function lists down unique words and cuts out repeats of the word. However, it is case sensitive.
 
 ```{r}
 a_list_of_words <- c("Dog", "dog", "dog", "cat", "cat", ",")
@@ -101,7 +101,7 @@ Fortunately, this is a solved problem with tidytext, which has a function called
 ### Task 6: Trying out unnest_tokens
 
 **Task** Run the following code and describe the output of using the `unnest_tokens` function. **Answer** 
-A word is a token in linguistics. Basically it is to pull apart the words. It is 647,091 of rows of unique words.
+A word is a token in linguistics. Basically the unnest_tokens function pulls apart the unique words in the text. It is 647,091 of rows of unique words.
 ```{r}
 unique_words <- releases |> select(text) |>
   unnest_tokens(word, text)
@@ -110,7 +110,7 @@ View(unique_words)
 
 ### Task 7: Make a column chart
 
-**Task** Run the following code and describe what the resulting graphic shows. Is it interesting? **Answer** It is not so interesting because the article "The" would pop up often in speeches or pieces of writing. The graphic also has connectors and articles which are often used in speeches and writing pieces.
+**Task** Run the following code and describe what the resulting graphic shows. Is it interesting? **Answer** It is not so interesting because the article "The" pops up often in speeches or pieces of writing. The graphic also has connector and article words which are often used in speeches and writing pieces.
 
 Now we can look at the top words in this dataset. Let's limit ourselves to making a plot of the top 25 words, and we'll use the function `count` to do the counting:
 
@@ -160,8 +160,8 @@ From there, we can get a simple word frequency by just grouping them together an
 
 ### Task 9: Using anti_join
 
-**Task** Run the following code and describe the results. Is it more interesting than before? **Answer**
-If the words match, then it does not join. If anything in the unique words don't match the stop words, then it is removed. So now we have a new dataframe of unique words with words we want to see. 
+**Task** Run the following code and describe the results. Is it more interesting than before? **Answer** Yes, the list of words seem to be more interesting and unique.
+Just a note on anti-join, ff the words match, then it does not join. If anything in the unique words don't match the stop words, then it is removed. So now we have a new dataframe of unique words with words we want to see. 
 
 ```{r}
 unique_words |>
@@ -199,7 +199,7 @@ Then we can create top 10 lists for both of them and compare:
 
 ### Task 11: Create dataframes with the top 10 words in each year
 
-**Task** Run the following code and describe the results. **Answer** In 2021 the words covid and health is in the top ten list. Health popped up as the second word in 2022 but covid did not pop up in this list. 2022 also doesn't have the word legislation in the top ten words for the year whereas it popped up in the 2021 and 2023 list. The words women and fire made an appearance in the top ten for 2023 and did not appear in the top ten list for 2021 and 2022. 
+**Task** Run the following code and describe the results. **Answer** In 2021 the words "covid" and "health" is in the top ten list. Health popped up as the second word in 2022 but "covid" did not pop up in this list. 2022 also doesn't have the word "legislation" in the top ten words for the year whereas it popped up in the 2021 and 2023 list. The words "women" and "fire" made an appearance in the top ten for 2023 and did not appear in the top ten list for 2021 and 2022. 
 
 ```{r}
 unique_words_2021 |>
@@ -244,8 +244,9 @@ So this block is is going to do the following:
 
 ### Task 12: Create a dataframe with the top 10 two-word phrases for 2021
 
-**Task** Run the following code and describe the results. **Answer**
-Some of the bigrams like covid19 and american rescue makes sense. The bigrams gives more context of the text. Such as american and rescue separately mean something completely different from american rescue. 
+**Task** Run the following code and describe the results. **Answer** The ngram function looks for words that are combined in the text. My understanding through the code is that it separates the bigrams first to have unique words and filter out the stopwords and then put them together again to make sure we have a more narrow down list of bigrams.
+
+The bigrams like "covid 19" and "american rescue" makes sense. The bigrams gives more context of the text. Such as "american" and "rescue" separately mean something completely different from "american rescue". 
 ```{r}
 releases |>
   filter(date < '2022-01-01') |>
@@ -264,7 +265,7 @@ And we already have a different, more nuanced result. Health was among the top s
 
 ### Task 13: Create a dataframe with the top 10 two-word phrases for 2022
 
-**Task** Run the following code and describe the results. **Answer**
+**Task** Run the following code and describe the results. **Answer** Among the top single words in 2022 is "project" and "health" which also shows up as a bigram in the 2022 top two-word phrases such as "project location" and "health care".
 
 ```{r}
 releases |>
@@ -284,7 +285,8 @@ And 2023?
 
 ### Task 14: Create a dataframe with the top 10 two-word phrases for 2023
 
-**Task** Run the following code and describe the results. **Answer** oral health. A big policy issue for Cardin is adding dental into medical insurance coverage.
+**Task** Run the following code and describe the results. **Answer** An interesting two-word phrase that popped up in 2023 is "oral health" and although "health" is one of the top single word in 2023, "oral" was not in there. Oral health is included as one of the top two-word phrases because
+it is a big policy issue for Cardin.
 
 ```{r}
 releases |>
