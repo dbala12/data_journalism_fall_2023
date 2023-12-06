@@ -29,6 +29,7 @@ library(tidyverse)
 library(tidytext)
 library(janitor)
 library(lubridate)
+library(rvest)
 ```
 
 Remember the end of the previous lab, where you scraped all of those press release links from Maryland Sen. Ben Cardin's website? We're going to take that one step further and analyze the actual text of those releases using tidytext. Our starting question: what words or phrases appear most in Cardin's press releases?
@@ -39,7 +40,7 @@ Let's read in this data and examine it:
 
 ### Task 2: Read in data
 
-**Task** Run the following code and describe the dataframe it outputs. **Answer**
+**Task** Run the following code and describe the data frame it outputs. **Answer** The dataframe is 4 columns and 999 rows of information. the 4 columns are broken down to the date and title of the press releases followed by the URL for the press releases. The 4th column titled 'text' is basically the text written in the press releases.
 
 ```{r}
 releases <- read_rds("data/cardin_releases.rds")
@@ -52,7 +53,6 @@ As an aside, below is an example of how you would scrape the text from the first
 **Task** Run the following code to gather the text for the first 10 press releases.
 
 ```{r}
-
 urls <- releases |> top_n(10) |>  pull(url)
 
 release_text <- tibble(url = character(), text = character())
@@ -89,7 +89,7 @@ If you are trying to create a list of unique words, R will treat differences in 
 
 ### Task 5: Trying out unique
 
-**Task** Run the following code and describe what the `unique` function does to the original list of words. **Answer**
+**Task** Run the following code and describe what the `unique` function does to the original list of words. **Answer** It is case sensitive.
 
 ```{r}
 a_list_of_words <- c("Dog", "dog", "dog", "cat", "cat", ",")
@@ -100,8 +100,8 @@ Fortunately, this is a solved problem with tidytext, which has a function called
 
 ### Task 6: Trying out unnest_tokens
 
-**Task** Run the following code and describe the output of using the `unnest_tokens` function. **Answer**
-
+**Task** Run the following code and describe the output of using the `unnest_tokens` function. **Answer** 
+A word is a token in linguistics. Basically it is to pull apart the words. It is 647,091 of rows of unique words.
 ```{r}
 unique_words <- releases |> select(text) |>
   unnest_tokens(word, text)
@@ -110,7 +110,7 @@ View(unique_words)
 
 ### Task 7: Make a column chart
 
-**Task** Run the following code and describe what the resulting graphic shows. Is it interesting? **Answer**
+**Task** Run the following code and describe what the resulting graphic shows. Is it interesting? **Answer** It is not so interesting because the article "The" would pop up often in speeches or pieces of writing. The graphic also has connectors and articles which are often used in speeches and writing pieces.
 
 Now we can look at the top words in this dataset. Let's limit ourselves to making a plot of the top 25 words, and we'll use the function `count` to do the counting:
 
@@ -161,6 +161,7 @@ From there, we can get a simple word frequency by just grouping them together an
 ### Task 9: Using anti_join
 
 **Task** Run the following code and describe the results. Is it more interesting than before? **Answer**
+If the words match, then it does not join. If anything in the unique words don't match the stop words, then it is removed. So now we have a new dataframe of unique words with words we want to see. 
 
 ```{r}
 unique_words |>
@@ -198,7 +199,7 @@ Then we can create top 10 lists for both of them and compare:
 
 ### Task 11: Create dataframes with the top 10 words in each year
 
-**Task** Run the following code and describe the results. **Answer**
+**Task** Run the following code and describe the results. **Answer** In 2021 the words covid and health is in the top ten list. Health popped up as the second word in 2022 but covid did not pop up in this list. 2022 also doesn't have the word legislation in the top ten words for the year whereas it popped up in the 2021 and 2023 list. The words women and fire made an appearance in the top ten for 2023 and did not appear in the top ten list for 2021 and 2022. 
 
 ```{r}
 unique_words_2021 |>
@@ -244,7 +245,7 @@ So this block is is going to do the following:
 ### Task 12: Create a dataframe with the top 10 two-word phrases for 2021
 
 **Task** Run the following code and describe the results. **Answer**
-
+Some of the bigrams like covid19 and american rescue makes sense. The bigrams gives more context of the text. Such as american and rescue separately mean something completely different from american rescue. 
 ```{r}
 releases |>
   filter(date < '2022-01-01') |>
@@ -283,7 +284,7 @@ And 2023?
 
 ### Task 14: Create a dataframe with the top 10 two-word phrases for 2023
 
-**Task** Run the following code and describe the results. **Answer**
+**Task** Run the following code and describe the results. **Answer** oral health. A big policy issue for Cardin is adding dental into medical insurance coverage.
 
 ```{r}
 releases |>
@@ -309,7 +310,9 @@ Another popular use of text analysis is to measure the sentiment of a word - whe
 
 ### Task 15: Load the bing lexicon and produce sentiments for our 2021-2023 unique words
 
-**Task** Run the following code and describe the results. Do any of the sentiments seem incorrect or counter-intuitive? **Answer**
+**Task** Run the following code and describe the results. Do any of the sentiments seem incorrect or counter-intuitive? **Answer** I think sentiment analysis is quite tough to apply because you can't really attach sentiment to a single word without context. In my previous job in Malaysia, we used sentiment analysis on certain words to figure out if it is attached to hate speech in social media posts. We fed in a certain group of words and labelled them as positive and negative and the program we worked on would automatically pinpoint the sentiment for those words and it would in a way identify the post as hateful or not based on those sentiments. This may have been how the program was automated in identifying hate speech, but it needed people to come in and change the sentiment manually because the sentiment of the words may have changed based on real life context at the time too. This just reminds me of that situation.
+
+Back to this dataframe, I think some of the words like 'urgent' listed as negative that I think could be neutral. I don't know if it is incorrect but how do we define and set in stone that certain words have negative or positive sentiments in general without any context? 
 
 ```{r}
 bing <- get_sentiments("bing")
