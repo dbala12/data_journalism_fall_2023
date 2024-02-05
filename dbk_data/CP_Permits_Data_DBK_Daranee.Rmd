@@ -1,0 +1,138 @@
+---
+title: "DBK Data: CP Residential and Commercial Permits 2013-2022"
+author: "Daranee Balachandar"
+date: "2023-02-04"
+output: html_notebook
+---
+
+College Park has seen an increase in development projects in the last few years, including the Purple Line Light Rail construction and other commercial developments, according to a 2023 report by The Diamondback [https://dbknews.com/2023/02/22/discovery-point-college-park/]. 
+
+A Maryland Today article in 2021 [https://today.umd.edu/new-vision-college-park-5cfb1445-617a-45b8-a06e-9a1d4ff9aefb] reported that University of Maryland and the City of College Park had planned to together in progressing the development of College Park in the next decade. 
+
+Here are some of my questions and observations based on the College Park Residental and Commercial Permits Data from 2013 to 2022. I will narrate my steps for the analysis of the data below. 
+
+Just to note, I do understand that not all residential and commercial permits are related to development in College Park and may be due to upgrades and other reasons. 
+
+## Task 1: Load libraries
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+library(tidyverse)
+library(lubridate)
+library(janitor)
+```
+
+## Task 2: Load data
+
+```{r}
+#Load data 
+cp_permits_2013_2022 <- read_csv("college park residential and commercial permits 2013-2023 - Sheet1.csv")
+
+#Data summary
+summary(cp_permits_2013_2022)
+
+view(cp_permits_2013_2022)
+```
+
+## Task 3: Clean Data
+
+```{r}
+#Clean data
+cp_permits_2013_2022 <- cp_permits_2013_2022 |> 
+  clean_names() 
+
+view(cp_permits_2013_2022)
+```
+
+The data should be set for me to explore.
+
+## Question 1
+
+Which permit category has the highest number of applications by each year the permit was applied?
+
+```{r}
+cp_permits_2013_2022 |> 
+  group_by(permit_category, permit_case_year) |> 
+  summarise(
+    count_permits = n()
+  ) |> 
+  arrange(desc(count_permits))
+```
+*Notes*: According to the data, there are two dates listed. The permit case year is the year the permit was applied and then the permit issuance date, which is pretty self-explanatory. The table above shows that 2021 had the highest number of building permit applications, followed by 2022. It can be hypothesised that the increase in permit applications those years were due to COVID in 2020. Interestingly, 2023 only had 810 building permit applications. This table also shows that there are 3 categories of permits: Building Permits, Health Permits and Site Road Permits.
+
+```{r}
+cp_permits_2013_2022 |> 
+  group_by(permit_category) |> 
+  summarise(
+    count_permits = n()
+  ) |> 
+  arrange(desc(count_permits))
+```
+
+## Question 2
+
+Based on the table above, which shows that Building Permits are the highest category, my next question is what is the highest expected construction cost for building permits issued in 2023.
+
+```{r}
+cp_permits_2013_2022 |> 
+  filter(permit_category == "Building Permit") |> 
+  filter(str_detect(permit_issuance_date, "2023")) |> 
+  group_by(expected_construction_cost) |> 
+  arrange(desc(expected_construction_cost))
+```
+*Notes* The table shows that a building permit to the College Park Knox Multi-Family case name has the highest expected construction cost at $53 million. The address for this construction is 4210 Knox College Park and it is the address for the Hub College Park, which is a new student residence that opened in fall 2023. The next highest expected cost of construction is under the case name RST Development Parking Deck at around $4 million. The location for the construction is for Days Inn by Wyndham. To round up the top 5 spot for highest expected construction cost at around $751, 000 is a case under the Board of Education - Exterior. The address for that case is 5101 Pierce, which is the location for Paint Branch Elementary School.
+
+## Question 3
+
+Are there similar case names that have been issued multiple permits in 2023? This applies to building permits.
+
+```{r}
+cp_permits_2013_2022 |> 
+  filter(permit_category == "Building Permit") |> 
+  filter(str_detect(permit_issuance_date, "2023")) |> 
+  group_by(case_name) |> 
+  summarise(
+    count = n()
+  ) |> 
+  arrange(desc(count))
+```
+*Notes* Please note that I did not clean the names of the cases or combine the names of businesses in Tabula because I noticed that most of them may have different reasons for applying and I wanted to look at that. With that being said, the highest number of cases for building permits issued in 2023 is Colonial Electric CO, with 443. The third entry is missing an L in Colonial and if that is combined it would be 449 for Colonial Electric CO for 2020. There are 341 for Colonial Electric CO 2021. I can't be sure but I think the year at the end of the case name is the year of application. Colonial Electric Co provides residential and commercial electric services. Similarly the top 10 cases with permits issued in 2023 are electric related. 
+
+Upon exploring the dataset above, I found one case name called Freedom Forever. In the main dataset, I searched for Freedom Forever and found 7 entries for Freedom Forever case name. The locations for all 7 entries show that these are housing properties that are not for sale. Interestingly, the expected construction cost is 0.
+
+Looking at the dataset above, it looks like most of the cases are electrical related. I did see that The Varsity went through a remodeling in 2021, 2022.
+
+## Question 4
+
+Next, what are the number of site road permits issued in 2023? 
+
+```{r}
+cp_permits_2013_2022 |> 
+  filter(permit_category == "Site Road Permit") |> 
+  filter(str_detect(permit_issuance_date, "2023")) |> 
+  group_by(case_name) |> 
+  summarise(
+    count = n()
+  ) |> 
+  arrange(desc(count))
+```
+```{r}
+cp_permits_2013_2022 |> 
+  filter(permit_category == "Site Road Permit") |> 
+  filter(str_detect(permit_issuance_date, "2023")) |> 
+  group_by(expected_construction_cost) |> 
+  arrange(desc(expected_construction_cost))
+```
+
+*Notes* The site road permits showed the top number of site road permits were for the Duvall Field Park n Rhode Island. Another project is the UMD College Park Sports Facility that had 3 permits issued for 2023. The permit type for the Sports Facility was a site development concept plan. The address for it seems to be close to Stamp Student Union building. Based on the last few months with lots of construction on campus drive and near the student union, my guess is that this site development concept plan is related to the construction. This would be related to an article by Maryland Today reporting on the large development Campus Facilities Plan [https://today.umd.edu/vision-for-campus-facilities-finds-inspiration-in-umd-history]. 
+
+## Final Note
+
+Based on my exploration, I can not seem to find a news worthy story with just the data alone. However, there are a few items that have interested me during this data exploration. Some honorable mentions would be to look into the housing under Freedom Forever and get a sense on whether these residences are for rent or AirBnB. The topic on AirBnB, short term and long term renting has been a topic of discussion at the College Park City Council in September 2023. According to an article by The Diamondback's Eden Binder who covered this story [https://dbknews.com/2023/09/27/college-park-city-council-short-term-rentals/], the city council were in talks to put in place more stricter regulations on short term rentals. As a college city with high rent for student housing, I think it would be interesting to look into short term rental regulations and how it affects students in College Park. Affordable student housing is another area that is in discussion in city council and the SGA. It would be great to get some data on the rise on student housing in College Park over the years due to development. 
+
+After exploring the data, the site development concept plan that popped up for UMD College Park Sports Facility is interesting because it may be related to the Campus Facilities Plan. It is a small piece of information but with so much development and construction in that area alone, I think it is a story worth pursuing about the plans for that area. How would it affect students? How has it affected students in terms of mobility and walking around the area? According to the Facilities Management page [https://facilities.umd.edu/projects-programs/campus-facilities-plan], the Steering Committee has gotten input through open forums and survey (more data?) about the plan. I would probably file a FOIA to get the input. According to the Campus Facilities Plan book [https://heyzine.com/flip-book/2b38bd63da.html#page/122], there are no proper feedback or survey results on these inputs. There is however a breakdown on the finances for the new construction and plans to execute it. 
+
+## The Story Pitch
+
+Based on the information above, my pitch is to look closely at the Campus Facilites Plan and FOIA the university the survey results on the input from students and faculty and staff on this plan. It would be interesting to look at the input and also look into the finance breakdown for the plan. Another item to pay attention to would be if this construction would hinder mobility for students and if the development stated in this plan would hire student engineers from UMD as the Purple Line has done. This is a multifaceted story pitch but I just think it is worth looking at.
