@@ -5,15 +5,47 @@ date: "2023-02-06"
 output: html_notebook
 ---
 
-The  
+The data analyzd below are house trips related to and sponsored by tech organizations.
 
-```{r}
-plot(cars)
+## Data Setup
+
+Load libraries
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+# install.packages("ggrepel")
+# install.packages('ggthemes')
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(ggthemes)
+library(tidycensus)
+library(ggplot2)
+library(ggrepel)
+library(tigris)
+library(sf)
+library(readr)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+Load Data
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+```{r}
+#Load data
+tech_trips_house <- read_csv("house_trips_tech/tech_trips_house.csv")
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+View(tech_trips_house)
+```
+## Data Cleaning
+
+```{r}
+#Clean column names and change year, doc id and district columns to a character column
+tech_trips_house <- tech_trips_house |> 
+  clean_names() |> 
+  mutate(year = as.character(year)) |> 
+  mutate(doc_id = as.character(doc_id)) |> 
+  mutate
+  
+```
+
 
